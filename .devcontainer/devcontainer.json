@@ -1,0 +1,13 @@
+{
+	"name": "minoauth",
+	"image": "mcr.microsoft.com/devcontainers/typescript-node:4-24-bookworm",
+	"features": {
+		"ghcr.io/devcontainers/features/node:1": {},
+		"ghcr.io/rails/devcontainer/features/sqlite3:1": {},
+		"ghcr.io/devcontainers/features/docker-in-docker:2": {}
+	},
+	"forwardPorts": [3210]
+
+	// Uncomment to connect as root instead. More info: https://aka.ms/dev-containers-non-root.
+	// "remoteUser": "root"
+}

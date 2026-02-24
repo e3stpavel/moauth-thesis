@@ -1,0 +1,23 @@
+{
+  "name": "@minoauth/eslint-config",
+  "type": "module",
+  "version": "0.0.1",
+  "private": true,
+  "keywords": [
+    "eslint-config"
+  ],
+  "exports": "./src/index.js",
+  "scripts": {
+    "lint": "eslint"
+  },
+  "peerDependencies": {
+    "eslint": "^10.0.2"
+  },
+  "devDependencies": {
+    "@antfu/eslint-config": "^7.5.0",
+    "eslint": "^10.0.2"
+  },
+  "dependencies": {
+    "eslint-plugin-astro": "^1.6.0"
+  }
+}

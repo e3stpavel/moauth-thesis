@@ -6,7 +6,20 @@
 		"ghcr.io/rails/devcontainer/features/sqlite3:1": {},
 		"ghcr.io/devcontainers/features/docker-in-docker:2": {}
 	},
-	"forwardPorts": [3210]
+	"forwardPorts": [3210],
+	"customizations": {
+		"vscode": {
+			"settings": {
+				"json.schemaDownload.trustedDomains": {
+					"https://turborepo.dev/schema.json": true
+				}
+			},
+			"extensions": [
+				"astro-build.astro-vscode",
+				"streetsidesoftware.code-spell-checker"
+			]
+		}
+	}
 
 	// Uncomment to connect as root instead. More info: https://aka.ms/dev-containers-non-root.
 	// "remoteUser": "root"

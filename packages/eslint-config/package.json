@@ -13,11 +13,11 @@
   "peerDependencies": {
     "eslint": "^10.0.2"
   },
+  "dependencies": {
+    "eslint-plugin-astro": "^1.6.0"
+  },
   "devDependencies": {
     "@antfu/eslint-config": "^7.5.0",
     "eslint": "^10.0.2"
-  },
-  "dependencies": {
-    "eslint-plugin-astro": "^1.6.0"
   }
 }

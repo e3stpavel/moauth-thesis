@@ -4,6 +4,7 @@ trustPolicy: no-downgrade
 
 trustPolicyExclude:
   - vite@6.4.1
+  - chokidar@4.0.3
 
 packages:
   - packages/*

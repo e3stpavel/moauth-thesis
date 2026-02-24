@@ -5,11 +5,19 @@
   "private": true,
   "scripts": {
     "dev": "astro dev",
+    "check": "astro check",
     "build": "astro build",
     "preview": "astro preview",
-    "astro": "astro"
+    "astro": "astro",
+    "lint": "eslint"
   },
   "dependencies": {
     "astro": "^5.17.1"
+  },
+  "devDependencies": {
+    "@astrojs/check": "^0.9.6",
+    "@minoauth/eslint-config": "workspace:*",
+    "eslint": "^10.0.2",
+    "typescript": "^5.9.3"
   }
 }

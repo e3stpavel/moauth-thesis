@@ -1,3 +1,4 @@
+import db from '@astrojs/db'
 import node from '@astrojs/node'
 import { defineConfig } from 'astro/config'
 
@@ -8,6 +9,8 @@ export default defineConfig({
   adapter: node({
     mode: 'standalone',
   }),
+
+  integrations: [db({ mode: 'node' })],
 
   server: {
     host: true,

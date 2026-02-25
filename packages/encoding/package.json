@@ -1,0 +1,25 @@
+{
+  "name": "@minoauth/encoding",
+  "type": "module",
+  "version": "0.0.1",
+  "private": true,
+  "exports": "./src/index.ts",
+  "files": [
+    "src"
+  ],
+  "scripts": {
+    "lint": "eslint"
+  },
+  "peerDependencies": {
+    "astro": "^5.17.1"
+  },
+  "dependencies": {
+    "@oslojs/encoding": "^1.1.0"
+  },
+  "devDependencies": {
+    "@antfu/eslint-config": "^7.5.0",
+    "astro": "^5.17.1",
+    "eslint": "^10.0.2",
+    "typescript": "^5.9.3"
+  }
+}

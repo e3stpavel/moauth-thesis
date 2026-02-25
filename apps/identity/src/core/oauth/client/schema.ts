@@ -1,7 +1,7 @@
 import { z } from 'astro/zod'
 
 export const clientCredentialsSchema = z.object({
-  clientId: z.string().cuid2(),
+  clientId: z.string().cuid2(), // TODO: length
   clientSecret: z.string().regex(/^[0-9a-f]+$/),
 })
 

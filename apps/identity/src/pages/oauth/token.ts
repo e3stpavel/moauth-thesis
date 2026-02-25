@@ -1,6 +1,8 @@
 import type { APIRoute } from 'astro'
 import { decodeBase64, validateBase64 } from '@minoauth/encoding'
 import { clientCredentialsSchema } from '~/core/oauth/client/schema'
+import { authorizationCodeRequestSchema } from '~/core/oauth/token/authorization-code/schema'
+import { refreshTokenRequestSchema } from '~/core/oauth/token/refresh-token/schema'
 
 function validateBodyCredentials(body: FormData) {
   const validation = clientCredentialsSchema
@@ -125,9 +127,50 @@ export const POST: APIRoute = async (context) => {
 
   const grantType = body.get('grant_type')
   if (grantType === 'authorization_code') {
+    const validation = authorizationCodeRequestSchema.safeParse({
+      code: body.get('code'),
+      redirectUri: body.get('redirect_uri'),
+    })
+    if (!validation.success) {
+      const { message, path } = validation.error.issues.at(0)!
+      return Response.json(
+        {
+          error: 'invalid_request',
+          error_description: `${message}${path.length > 0 ? ` (${path.join('.')})` : ''}`,
+          error_uri: 'https://datatracker.ietf.org/doc/html/rfc6749#section-4.1.3',
+        },
+        {
+          status: 400,
+          headers: {
+            'Cache-Control': 'no-store',
+          },
+        },
+      )
+    }
+
     console.log('code')
   }
   else if (grantType === 'refresh_token') {
+    const validation = refreshTokenRequestSchema.safeParse({
+      refreshToken: body.get('refresh_token'),
+    })
+    if (!validation.success) {
+      const { message, path } = validation.error.issues.at(0)!
+      return Response.json(
+        {
+          error: 'invalid_request',
+          error_description: `${message}${path.length > 0 ? ` (${path.join('.')})` : ''}`,
+          error_uri: 'https://datatracker.ietf.org/doc/html/rfc6749#section-6',
+        },
+        {
+          status: 400,
+          headers: {
+            'Cache-Control': 'no-store',
+          },
+        },
+      )
+    }
+
     console.log('refresh token')
   }
   else if (grantType === 'client_credentials') {

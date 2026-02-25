@@ -123,6 +123,30 @@ export const POST: APIRoute = async (context) => {
 
   console.log(clientCredentials)
 
+  const grantType = body.get('grant_type')
+  if (grantType === 'authorization_code') {
+    console.log('code')
+  }
+  else if (grantType === 'refresh_token') {
+    console.log('refresh token')
+  }
+  else if (grantType === 'client_credentials') {
+    console.log('client credentials')
+  }
+  else {
+    return Response.json(
+      {
+        error: 'unsupported_grant_type',
+      },
+      {
+        status: 400,
+        headers: {
+          'Cache-Control': 'no-store',
+        },
+      },
+    )
+  }
+
   const data = Object.fromEntries(body)
 
   console.log(data)

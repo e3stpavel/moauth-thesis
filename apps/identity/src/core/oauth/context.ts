@@ -1,15 +1,14 @@
-// interface Bucket<T> {
-//   get: (name: string) => T | null
+export interface Body {
+  get: (name: string) => string | undefined
 
-//   getAll: (name: string) => T[]
-
-//   has: (name: string) => boolean
-// }
+  has: (name: string) => boolean
+}
 
 export interface Context {
-  body: FormData
+  readonly body: Body
 
-  headers: Headers
+  readonly headers: Headers
 
-  locals: App.Locals
+  // TODO: this is container to inject not only request locals
+  readonly locals: App.Locals
 }

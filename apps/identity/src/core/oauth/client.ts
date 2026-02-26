@@ -20,7 +20,7 @@ export class Client {
 
   async verifySecret(secret: string, verifySecretHashFn: VerifySecretHashFn) {
     if (this.isPublic) {
-      throw new Error('Public client cannot have a secret')
+      throw new Error('Public client cannot hold a secret')
     }
 
     return await verifySecretHashFn(this.secretHash!, secret)

@@ -1,6 +1,7 @@
 import type { APIRoute } from 'astro'
 import { authenticateClient } from '~/core/oauth/client-authentication'
 import { InvalidClientError, InvalidRequestError, TokenError } from '~/core/oauth/error'
+import { FormUrlEncodedBody } from '~/util/context/body'
 
 export const POST: APIRoute = async (context) => {
   try {
@@ -11,7 +12,9 @@ export const POST: APIRoute = async (context) => {
       )
     }
 
-    const body = await context.request.formData()
+    const formData = await context.request.formData()
+    const body = new FormUrlEncodedBody(formData)
+
     const client = await authenticateClient({
       body,
       headers: context.request.headers,

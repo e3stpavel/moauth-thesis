@@ -44,6 +44,12 @@ export const POST: APIRoute = async (context) => {
       )
     }
 
-    return Response.json({ error: 'server_error' }, { status: 500, headers })
+    return Response.json(
+      {
+        error: 'server_error',
+        error_description: 'The authorization server encountered an unexpected condition that prevented it from fulfilling the request',
+      },
+      { status: 500, headers },
+    )
   }
 }

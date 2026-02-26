@@ -14,7 +14,10 @@ interface ValidationIssue {
 export class InvalidRequestError extends TokenError {
   code = 'invalid_request'
 
-  constructor(message?: string, reference?: string) {
+  constructor(
+    message: string = 'The request is missing a required parameter, includes an unsupported parameter value (other than grant type), repeats a parameter or is otherwise malformed',
+    reference?: string,
+  ) {
     super(message, reference)
   }
 
@@ -24,14 +27,17 @@ export class InvalidRequestError extends TokenError {
       return new this(`${message}${path.length > 0 ? ` (${path.join('.')})` : ''}`)
     }
 
-    return new this('Validation failed')
+    return new this()
   }
 }
 
 export class InvalidClientError extends TokenError {
   code = 'invalid_client'
 
-  constructor(message?: string, reference?: string) {
+  constructor(
+    message: string = 'Client authentication failed due to missing or invalid client credentials',
+    reference?: string,
+  ) {
     super(message, reference)
   }
 }
@@ -39,7 +45,10 @@ export class InvalidClientError extends TokenError {
 export class UnsupportedGrantTypeError extends TokenError {
   code = 'unsupported_grant_type'
 
-  constructor(message?: string, reference?: string) {
+  constructor(
+    message: string = 'The authorization grant type is not supported by the authorization server',
+    reference?: string,
+  ) {
     super(message, reference)
   }
 }

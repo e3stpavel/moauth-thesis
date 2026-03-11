@@ -15,9 +15,9 @@
   },
   "dependencies": {
     "@astrojs/db": "^0.19.0",
-    "@astrojs/node": "^9.5.4",
+    "@astrojs/node": "^9.5.5",
     "@minoauth/encoding": "workspace:*",
-    "astro": "^5.17.1"
+    "astro": "^5.18.1"
   },
   "devDependencies": {
     "@astrojs/check": "^0.9.6",

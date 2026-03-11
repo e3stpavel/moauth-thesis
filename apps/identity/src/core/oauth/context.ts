@@ -9,6 +9,5 @@ export interface Context {
 
   readonly headers: Headers
 
-  // TODO: this is container to inject not only request locals
-  readonly locals: App.Locals
+  readonly signal: AbortSignal
 }

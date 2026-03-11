@@ -1,21 +1,38 @@
 import * as encoding from '@oslojs/encoding'
 import { z } from 'astro/zod'
 
+// ' %&+£€' => '+%25%26%2B%C2%A3%E2%82%AC'
+//  https://datatracker.ietf.org/doc/html/rfc6749#appendix-B
+export function encodeFormUrlEncoded(data: string): string {
+  const params = new URLSearchParams()
+  params.append('q', data)
+  return params.toString().slice('q='.length)
+}
+
+export function decodeFormUrlEncoded(encoded: string): string {
+  const params = new URLSearchParams(`q=${encoded}`)
+  return params.get('q')!
+}
+
+const hexLowercaseRegex = /^[0-9a-f]+$/
+
 export function validateHexLowercase(encoded: string): boolean {
-  const validation = z.string().regex(/^[0-9a-f]+$/).safeParse(encoded)
+  const validation = z.string().regex(hexLowercaseRegex).safeParse(encoded)
   return validation.success
 }
 
-export function encodeHexLowerCase(data: Uint8Array<ArrayBuffer>): string {
+export function encodeHexLowercase(data: Uint8Array<ArrayBuffer>): string {
   return encoding.encodeHexLowerCase(new Uint8Array(data))
 }
 
+const hexUppercaseRegex = /^[0-9A-F]+$/
+
 export function validateHexUppercase(encoded: string): boolean {
-  const validation = z.string().regex(/^[0-9A-F]+$/).safeParse(encoded)
+  const validation = z.string().regex(hexUppercaseRegex).safeParse(encoded)
   return validation.success
 }
 
-export function encodeHexUpperCase(data: Uint8Array<ArrayBuffer>): string {
+export function encodeHexUppercase(data: Uint8Array<ArrayBuffer>): string {
   return encoding.encodeHexUpperCase(new Uint8Array(data))
 }
 

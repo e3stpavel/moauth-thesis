@@ -17,9 +17,9 @@
     "@oslojs/encoding": "^1.1.0"
   },
   "devDependencies": {
-    "@antfu/eslint-config": "^7.5.0",
+    "@minoauth/eslint-config": "workspace:*",
     "astro": "^5.17.1",
-    "eslint": "^10.0.2",
+    "eslint": "^10.0.3",
     "typescript": "^5.9.3"
   }
 }

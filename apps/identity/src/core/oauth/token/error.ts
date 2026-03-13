@@ -1,5 +1,5 @@
-export abstract class TokenError extends Error {
-  abstract readonly code: string
+export abstract class TokenEndpointError extends Error {
+  public abstract readonly code: string
 
   constructor(message?: string, public reference?: string) {
     super(message)
@@ -11,7 +11,7 @@ interface ValidationIssue {
   path: (string | number)[]
 }
 
-export class InvalidRequestError extends TokenError {
+export class InvalidRequestError extends TokenEndpointError {
   code = 'invalid_request'
 
   constructor(
@@ -21,9 +21,9 @@ export class InvalidRequestError extends TokenError {
     super(message, reference)
   }
 
-  static fromValidationIssues(issues: ValidationIssue[]) {
-    if (issues.length > 0) {
-      const { message, path } = issues.at(0)!
+  static withIssue(issue?: ValidationIssue) {
+    if (issue) {
+      const { message, path } = issue
       return new this(`${message}${path.length > 0 ? ` (${path.join('.')})` : ''}`)
     }
 
@@ -31,7 +31,7 @@ export class InvalidRequestError extends TokenError {
   }
 }
 
-export class InvalidClientError extends TokenError {
+export class InvalidClientError extends TokenEndpointError {
   code = 'invalid_client'
 
   constructor(
@@ -42,7 +42,7 @@ export class InvalidClientError extends TokenError {
   }
 }
 
-export class UnsupportedGrantTypeError extends TokenError {
+export class UnsupportedGrantTypeError extends TokenEndpointError {
   code = 'unsupported_grant_type'
 
   constructor(

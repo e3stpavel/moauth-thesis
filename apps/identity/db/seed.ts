@@ -6,6 +6,7 @@ export default async function seed() {
     {
       id: 'pub',
       name: 'Public client',
+      isPublic: true,
       redirectUris: ['http://localhost:4321/auth/callback'],
     },
   ])

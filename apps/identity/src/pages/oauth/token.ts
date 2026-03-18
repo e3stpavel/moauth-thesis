@@ -1,6 +1,7 @@
 import type { APIRoute } from 'astro'
 import type { Context } from '~/core/oauth/token/request'
 import { InvalidClientError, InvalidRequestError, TokenEndpointError } from '~/core/oauth/token/error'
+import { handleTokenRequest } from '~/core/oauth/token/handler'
 import { TokenEndpointAuth, TokenEndpointBody } from '~/core/oauth/token/request'
 
 export const POST: APIRoute = async ({ request }) => {
@@ -27,7 +28,7 @@ export const POST: APIRoute = async ({ request }) => {
       signal: request.signal,
     }
 
-    console.log(context)
+    const result = await handleTokenRequest(context)
 
     return Response.json(null, { status: 200, headers })
   }

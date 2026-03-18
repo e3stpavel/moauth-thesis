@@ -1,0 +1,39 @@
+{
+  "name": "@minoauth/logger",
+  "type": "module",
+  "version": "0.0.1",
+  "private": true,
+  "keywords": [
+    "astro",
+    "withastro",
+    "astro-integration"
+  ],
+  "exports": {
+    ".": "./src/index.ts",
+    "./core": "./dist/logger.mjs"
+  },
+  "files": [
+    "index.d.ts",
+    "src"
+  ],
+  "scripts": {
+    "build": "tsdown",
+    "dev": "tsdown --watch",
+    "check": "tsc --noEmit",
+    "lint": "eslint"
+  },
+  "peerDependencies": {
+    "astro": "^5.18.1"
+  },
+  "dependencies": {
+    "piccolore": "^0.1.3"
+  },
+  "devDependencies": {
+    "@minoauth/eslint-config": "workspace:*",
+    "astro": "^5.18.1",
+    "eslint": "^10.0.3",
+    "tsdown": "^0.21.4",
+    "typescript": "^5.9.3",
+    "vite": "^6.4.1"
+  }
+}

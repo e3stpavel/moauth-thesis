@@ -1,5 +1,6 @@
 import db from '@astrojs/db'
 import node from '@astrojs/node'
+import logger from '@minoauth/logger'
 import { defineConfig } from 'astro/config'
 
 // https://astro.build/config
@@ -10,7 +11,7 @@ export default defineConfig({
     mode: 'standalone',
   }),
 
-  integrations: [db({ mode: 'node' })],
+  integrations: [logger(), db({ mode: 'node' })],
 
   server: {
     host: true,

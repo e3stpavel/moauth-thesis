@@ -7,7 +7,7 @@ export function validate(encoded: string): boolean {
 }
 
 export function encode(data: Uint8Array<ArrayBuffer>): string {
-  return encoding.encodeBase64(new Uint8Array(data))
+  return encoding.encodeBase64(data)
 }
 
 export function decode(encoded: string): Uint8Array<ArrayBuffer> {

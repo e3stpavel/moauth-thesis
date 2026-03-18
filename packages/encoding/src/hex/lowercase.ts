@@ -9,7 +9,7 @@ export function validate(encoded: string): boolean {
 }
 
 export function encode(data: Uint8Array<ArrayBuffer>): string {
-  return encoding.encodeHexLowerCase(new Uint8Array(data))
+  return encoding.encodeHexLowerCase(data)
 }
 
 export function decode(encoded: string): Uint8Array<ArrayBuffer> {

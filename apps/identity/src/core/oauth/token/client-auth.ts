@@ -1,7 +1,9 @@
 import type { Context } from '~/core/oauth/token/request'
 import { Clients, db, eq } from 'astro:db'
 import { logger } from 'minoauth:logger'
+import { Client } from '~/core/oauth/client'
 import { InvalidClientError, InvalidRequestError } from '~/core/oauth/token/error'
+import * as hash from '~/utils/hash'
 
 interface ClientSecretRequest {
   method: 'client_secret_basic' | 'client_secret_post'
@@ -10,20 +12,24 @@ interface ClientSecretRequest {
 }
 
 export async function handleClientSecretRequest(request: ClientSecretRequest) {
-  const [client] = await db.select().from(Clients).where(eq(Clients.id, request.clientId))
-  if (!client) {
+  const [result] = await db.select().from(Clients).where(eq(Clients.id, request.clientId))
+  if (!result) {
     logger.error(`Client lookup failed (${request.clientId})`)
     throw new InvalidClientError()
   }
 
-  if (!(client.isPublic && client.secretHash)) {
+  const client = Client.parserFromDB(result)
+  if (!client.isConfidential) {
     logger.error(`Public client (${client.id}) included 'client_secret' in request`)
     throw new InvalidClientError()
   }
 
   // TODO: check token_endpoint_auth_method when added
-  // TODO: verify secret hash
-  console.log('verifying secret...')
+  const isSecretValid = await client.verifySecret(request.clientSecret, hash.verify)
+  if (!isSecretValid) {
+    logger.error(`'client_secret' mismatch for client (${client.id})`)
+    throw new InvalidClientError()
+  }
 
   return client
 }
@@ -34,12 +40,13 @@ interface NoneRequest {
 }
 
 export async function handleNoneRequest(request: NoneRequest) {
-  const [client] = await db.select().from(Clients).where(eq(Clients.id, request.clientId))
-  if (!client) {
+  const [result] = await db.select().from(Clients).where(eq(Clients.id, request.clientId))
+  if (!result) {
     logger.error(`Client lookup failed (${request.clientId})`)
     throw new InvalidClientError()
   }
 
+  const client = Client.parserFromDB(result)
   if (!client.isPublic) {
     logger.error(`Confidential client (${client.id}) tried to authenticate using 'none' method`)
     throw new InvalidClientError()

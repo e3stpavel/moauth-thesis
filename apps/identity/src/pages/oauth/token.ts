@@ -1,5 +1,6 @@
 import type { APIRoute } from 'astro'
 import type { Context } from '~/core/oauth/token/request'
+import { logger } from 'minoauth:logger'
 import { InvalidClientError, InvalidRequestError, TokenEndpointError } from '~/core/oauth/token/error'
 import { handleTokenRequest } from '~/core/oauth/token/handler'
 import { TokenEndpointAuth, TokenEndpointBody } from '~/core/oauth/token/request'
@@ -49,6 +50,8 @@ export const POST: APIRoute = async ({ request }) => {
         { status, headers },
       )
     }
+
+    logger.error(`Unexpected error occurred ${JSON.stringify(error)}`)
 
     return Response.json(
       {

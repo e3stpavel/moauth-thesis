@@ -1,4 +1,5 @@
 import type { Context } from '~/core/oauth/token/request'
+import { logger } from 'minoauth:logger'
 import * as clientAuth from '~/core/oauth/token/client-auth'
 import { InvalidClientError } from '~/core/oauth/token/error'
 
@@ -14,6 +15,7 @@ export function handleClientAuthRequest(context: Context) {
       return clientAuth.handleNoneRequest(clientAuthRequest)
 
     default:
+      logger.error('No matching handler to handle client authentication request')
       throw new InvalidClientError()
   }
 }

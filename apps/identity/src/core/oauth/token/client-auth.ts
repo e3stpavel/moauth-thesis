@@ -1,5 +1,6 @@
 import type { Context } from '~/core/oauth/token/request'
 import { Clients, db, eq } from 'astro:db'
+import { logger } from 'minoauth:logger'
 import { InvalidClientError, InvalidRequestError } from '~/core/oauth/token/error'
 
 interface ClientSecretRequest {
@@ -11,10 +12,12 @@ interface ClientSecretRequest {
 export async function handleClientSecretRequest(request: ClientSecretRequest) {
   const [client] = await db.select().from(Clients).where(eq(Clients.id, request.clientId))
   if (!client) {
+    logger.error(`Client lookup failed (${request.clientId})`)
     throw new InvalidClientError()
   }
 
   if (!(client.isPublic && client.secretHash)) {
+    logger.error(`Public client (${client.id}) included 'client_secret' in request`)
     throw new InvalidClientError()
   }
 
@@ -33,10 +36,12 @@ interface NoneRequest {
 export async function handleNoneRequest(request: NoneRequest) {
   const [client] = await db.select().from(Clients).where(eq(Clients.id, request.clientId))
   if (!client) {
+    logger.error(`Client lookup failed (${request.clientId})`)
     throw new InvalidClientError()
   }
 
   if (!client.isPublic) {
+    logger.error(`Confidential client (${client.id}) tried to authenticate using 'none' method`)
     throw new InvalidClientError()
   }
 
@@ -52,6 +57,7 @@ export function validateRequest(context: Context): ClientAuthRequest {
     // we will not forbid the usage of 'client_id' in body alongside with 'Authorization' header,
     //  but we must check whether they are identical or not
     if (context.body.has('client_id') && context.body.get('client_id') !== context.auth.clientId) {
+      logger.error(`Authenticated client 'client_id' (${context.auth.clientId}) doesn't match 'client_id' in request body (${context.body.get('client_id')})`)
       throw new InvalidClientError()
     }
 
@@ -64,6 +70,7 @@ export function validateRequest(context: Context): ClientAuthRequest {
 
   if (context.body.has('client_secret')) {
     if (!context.body.has('client_id')) {
+      logger.error('\'client_id\' is missing from request body, although \'client_secret\' provided')
       throw new InvalidClientError()
     }
 
@@ -76,6 +83,7 @@ export function validateRequest(context: Context): ClientAuthRequest {
 
   // method 'none' is used as a fallback when no proper auth method is used
   if (context.body.has('client_id') && clientAuthRequests.length === 0) {
+    logger.debug('No client authentication method found, using \'none\' as a fallback')
     clientAuthRequests.push({
       method: 'none',
       clientId: context.body.get('client_id')!,
@@ -83,6 +91,7 @@ export function validateRequest(context: Context): ClientAuthRequest {
   }
 
   if (clientAuthRequests.length === 0) {
+    logger.error('Client authentication is missing from request')
     throw new InvalidClientError(
       'Confidential clients or other clients issued client credentials must authenticate',
       'https://datatracker.ietf.org/doc/html/rfc6749#section-2.3',
@@ -90,11 +99,13 @@ export function validateRequest(context: Context): ClientAuthRequest {
   }
 
   if (clientAuthRequests.length > 1) {
+    logger.error(`More than one client authentication method is included in request (${clientAuthRequests.map(request => request.method).join(', ')})`)
     throw new InvalidRequestError(
       'The client must not use more than one authentication method in each request',
       'https://datatracker.ietf.org/doc/html/rfc6749#section-2.3',
     )
   }
 
+  logger.info(`'${clientAuthRequests.at(0)?.method}' method was selected for authenticating the client`)
   return clientAuthRequests.at(0)!
 }

@@ -1,5 +1,5 @@
 import type { AstroIntegration } from 'astro'
-import type { Plugin as VitePlugin } from 'vite/'
+import type { Plugin as VitePlugin } from 'vite'
 import { code } from './utils'
 import './module.d.ts'
 

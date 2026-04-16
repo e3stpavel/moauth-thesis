@@ -1,5 +1,5 @@
 import type { Context } from '~/core/oauth/token/request'
-import { logger } from 'minoauth:logger'
+import { logger } from 'moauth:logger'
 import * as clientAuth from '~/core/oauth/token/client-auth'
 import { InvalidClientError } from '~/core/oauth/token/error'
 

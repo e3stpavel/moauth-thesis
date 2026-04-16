@@ -1,5 +1,5 @@
 import { timingSafeEqual } from 'node:crypto'
-import { hexLowercase } from '@minoauth/encoding'
+import { hexLowercase } from '@moauth/encoding'
 
 export async function digest(str: string) {
   const buffer = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(str))

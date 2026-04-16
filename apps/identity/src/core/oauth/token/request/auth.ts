@@ -1,4 +1,4 @@
-import { base64, formUrlEncoded } from '@minoauth/encoding'
+import { base64, formUrlEncoded } from '@moauth/encoding'
 import { z } from 'astro/zod'
 import { clientIdSchema, clientSecretSchema } from '~/core/oauth/schema'
 import { InvalidClientError } from '~/core/oauth/token/error'

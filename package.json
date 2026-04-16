@@ -1,5 +1,5 @@
 {
-  "name": "minoauth-root",
+  "name": "moauth-root",
   "version": "0.0.1",
   "private": true,
   "packageManager": "pnpm@10.30.2+sha512.36cdc707e7b7940a988c9c1ecf88d084f8514b5c3f085f53a2e244c2921d3b2545bc20dd4ebe1fc245feec463bb298aecea7a63ed1f7680b877dc6379d8d0cb4",
@@ -9,7 +9,7 @@
     "lint:workspace": "eslint"
   },
   "devDependencies": {
-    "@minoauth/eslint-config": "workspace:*",
+    "@moauth/eslint-config": "workspace:*",
     "eslint": "^10.0.3",
     "turbo": "^2.8.16"
   }

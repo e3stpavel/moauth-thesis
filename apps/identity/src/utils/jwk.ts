@@ -1,4 +1,4 @@
-import { base64url } from '@minoauth/encoding'
+import { base64url } from '@moauth/encoding'
 
 export async function calculateThumbprint(publicKey: JsonWebKey) {
   const jwk = Object.fromEntries(

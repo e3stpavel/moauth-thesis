@@ -1,6 +1,6 @@
 import db from '@astrojs/db'
 import node from '@astrojs/node'
-import logger from '@minoauth/logger'
+import logger from '@moauth/logger'
 import { defineConfig } from 'astro/config'
 
 // https://astro.build/config

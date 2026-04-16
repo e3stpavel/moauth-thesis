@@ -1,4 +1,4 @@
-import { hexLowercase } from '@minoauth/encoding'
+import { hexLowercase } from '@moauth/encoding'
 import { z } from 'astro/zod'
 
 export const clientIdSchema = z.string().cuid2('Invalid')

@@ -1,6 +1,6 @@
 import type { APIRoute } from 'astro'
 import type { Context } from '~/core/oauth/token/request'
-import { logger } from 'minoauth:logger'
+import { logger } from 'moauth:logger'
 import { InvalidClientError, InvalidRequestError, TokenEndpointError } from '~/core/oauth/token/error'
 import { handleTokenRequest } from '~/core/oauth/token/handler'
 import { TokenEndpointAuth, TokenEndpointBody } from '~/core/oauth/token/request'

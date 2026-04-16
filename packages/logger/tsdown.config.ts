@@ -1,7 +1,7 @@
 import { defineConfig } from 'tsdown'
 
 export default defineConfig({
-  name: '@minoauth/logger',
+  name: '@moauth/logger',
   entry: ['src/logger.ts'],
   sourcemap: true,
 })

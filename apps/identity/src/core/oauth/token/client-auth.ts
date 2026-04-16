@@ -1,6 +1,6 @@
 import type { Context } from '~/core/oauth/token/request'
 import { Clients, db, eq } from 'astro:db'
-import { logger } from 'minoauth:logger'
+import { logger } from 'moauth:logger'
 import { Client } from '~/core/oauth/client'
 import { InvalidClientError, InvalidRequestError } from '~/core/oauth/token/error'
 import * as hash from '~/utils/hash'

@@ -1,5 +1,5 @@
 {
-  "name": "@minoauth/eslint-config",
+  "name": "@moauth/eslint-config",
   "type": "module",
   "version": "0.0.1",
   "private": true,

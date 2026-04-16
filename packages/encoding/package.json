@@ -19,7 +19,7 @@
   "devDependencies": {
     "@moauth/eslint-config": "workspace:*",
     "astro": "^5.18.1",
-    "eslint": "^10.0.3",
+    "eslint": "^10.2.0",
     "typescript": "^5.9.3"
   }
 }

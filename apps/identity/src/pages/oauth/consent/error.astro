@@ -1,11 +1,11 @@
 ---
-import BaseLayout from '~/layouts/BaseLayout.astro'
 import Logo from '~/assets/logo-no-space.svg'
+import AuthLayout from '~/layouts/AuthLayout.astro'
 ---
 
-<BaseLayout>
-  <main class="bg-white">
-    <section class="@container mx-auto max-w-md px-8 py-16">
+<AuthLayout>
+  <div class="bg-white">
+    <section class="@container mx-auto max-w-md px-4 py-8 sm:px-8">
       <div class="">
         <Logo class="h-7 w-auto text-gray-900" />
         <h1 class="mt-6 text-xl font-semibold tracking-tight text-gray-900">This link is no longer valid</h1>
@@ -26,5 +26,5 @@ import Logo from '~/assets/logo-no-space.svg'
         </p>
       </div>
     </section>
-  </main>
-</BaseLayout>
+  </div>
+</AuthLayout>

@@ -1,0 +1,39 @@
+---
+import Icon from '~/components/ui/Icon.astro'
+import BaseLayout from './BaseLayout.astro'
+---
+
+<BaseLayout>
+  <slot name="head" slot="head" />
+  <header class="bg-white">
+    <div class="mx-auto max-w-screen-2xl px-4 sm:px-6 lg:px-16">
+      <div class="flex h-16 items-center justify-end-safe">
+        <div class="size-9 rounded-full bg-gray-100"></div>
+      </div>
+    </div>
+  </header>
+  <main class="flex-1">
+    <slot />
+  </main>
+  <footer class="@container mt-8 bg-gray-50">
+    <div class="mx-auto max-w-screen-2xl px-4 sm:px-6 lg:px-16">
+      <ul class="flex items-start justify-center-safe gap-6 py-6 @max-md:flex-col @md:flex-wrap @md:items-center">
+        <li class="contents">
+          <a href="#" class="text-xs text-gray-700 hover:text-blue-700 hover:underline">Privacy Policy</a>
+        </li>
+        <li class="contents">
+          <a href="#" class="text-xs text-gray-700 hover:text-blue-700 hover:underline">Terms & Conditions</a>
+        </li>
+        <li class="contents">
+          <a href="#" class="text-xs text-gray-700 hover:text-blue-700 hover:underline">Cookie preferences</a>
+        </li>
+        <li class="contents">
+          <a href="#" class="text-xs text-gray-700 hover:text-blue-700 hover:underline">Help center</a>
+        </li>
+        <li class="contents">
+          <a href="#" class="text-xs text-gray-700 hover:text-blue-700 hover:underline">Contact</a>
+        </li>
+      </ul>
+    </div>
+  </footer>
+</BaseLayout>

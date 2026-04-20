@@ -1,8 +1,8 @@
 ---
-import BaseLayout from '~/layouts/BaseLayout.astro'
 import Logo from '~/assets/logo-no-space.svg'
 import ConsentList from '~/components/consent/List.astro'
 import Button from '~/components/ui/Button.astro'
+import AuthLayout from '~/layouts/AuthLayout.astro'
 
 const appName = 'Test App'
 
@@ -10,14 +10,11 @@ const appName = 'Test App'
 // todo: check auth session before checking for request
 ---
 
-<BaseLayout>
-  <main class="bg-white">
-    <section class="@container mx-auto max-w-md px-8 py-16">
+<AuthLayout>
+  <div class="bg-white">
+    <section class="@container mx-auto max-w-md px-4 py-8 sm:px-8">
       <div class="">
-        <div class="relative isolate">
-          <Logo class="h-7 w-auto text-gray-900" />
-          <div class="absolute top-1/2 right-0 size-9 -translate-y-1/2 rounded-full bg-gray-200"></div>
-        </div>
+        <Logo class="h-7 w-auto text-gray-900" />
         <h1 class="mt-6 text-xl font-semibold tracking-tight text-gray-900">
           {appName} is requesting access to your account
         </h1>
@@ -52,5 +49,5 @@ const appName = 'Test App'
         </form>
       </div>
     </section>
-  </main>
-</BaseLayout>
+  </div>
+</AuthLayout>

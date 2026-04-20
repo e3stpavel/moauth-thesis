@@ -1,15 +1,15 @@
 ---
-import BaseLayout from '~/layouts/BaseLayout.astro'
 import Logo from '~/assets/logo-no-space.svg'
+import AuthLayout from '~/layouts/AuthLayout.astro'
 ---
 
-<BaseLayout>
-  <main class="bg-white">
-    <section class="@container mx-auto max-w-md px-8 py-16">
+<AuthLayout>
+  <div class="bg-white">
+    <section class="@container mx-auto max-w-md px-4 py-8 sm:px-8">
       <div class="">
         <Logo class="h-7 w-auto text-gray-900" />
         <h1 class="mt-6 text-xl font-semibold tracking-tight text-gray-900">
-          We won't ask you to approve request this time
+          We won't be proceeding with this request
         </h1>
         <p class="mt-3 text-sm text-gray-600">
           This request cannot be completed because it appears to be invalid or potentially unsafe. It may be caused by a
@@ -43,5 +43,5 @@ import Logo from '~/assets/logo-no-space.svg'
         </dl>
       </div>
     </section>
-  </main>
-</BaseLayout>
+  </div>
+</AuthLayout>

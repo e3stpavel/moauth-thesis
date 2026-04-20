@@ -9,11 +9,11 @@ const { icon } = Astro.props
 ---
 
 <li class="@container py-6">
-  <div class="grid items-start justify-items-start gap-2 @sm:grid-cols-[auto_1fr]">
+  <div class="grid items-start justify-items-start gap-3 @sm:grid-cols-[auto_1fr]">
     <div class="rounded-full border border-blue-100/40 bg-blue-50 p-2">
       <Icon icon:name={icon} class="text-blue-700" />
     </div>
-    <p class="mt-2 text-sm text-gray-900">
+    <p class="text-sm text-gray-900 @sm:mt-2">
       <slot />
     </p>
   </div>

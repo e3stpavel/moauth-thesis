@@ -23,7 +23,12 @@
   "devDependencies": {
     "@astrojs/check": "^0.9.8",
     "@moauth/eslint-config": "workspace:*",
+    "@tailwindcss/vite": "^4.2.2",
     "eslint": "^10.2.0",
+    "eslint-plugin-format": "^2.0.1",
+    "prettier-plugin-astro": "^0.14.1",
+    "prettier-plugin-tailwindcss": "^0.7.2",
+    "tailwindcss": "^4.2.2",
     "typescript": "^5.9.3",
     "vitest": "^4.1.4"
   }

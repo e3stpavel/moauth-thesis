@@ -1,6 +1,8 @@
 import db from '@astrojs/db'
 import node from '@astrojs/node'
 import logger from '@moauth/logger'
+import tailwindcss from '@tailwindcss/vite'
+
 import { defineConfig } from 'astro/config'
 
 // https://astro.build/config
@@ -12,6 +14,10 @@ export default defineConfig({
   }),
 
   integrations: [logger(), db({ mode: 'node' })],
+
+  vite: {
+    plugins: [tailwindcss()],
+  },
 
   server: {
     host: true,

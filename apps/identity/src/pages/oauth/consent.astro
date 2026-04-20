@@ -1,8 +1,53 @@
 ---
 import BaseLayout from '~/layouts/BaseLayout.astro'
+import Logo from '~/assets/logo-no-space.svg'
+import ConsentList from '~/components/consent/List.astro'
+import Button from '~/components/ui/Button.astro'
+
+const appName = 'Test App'
 ---
 
 <BaseLayout>
-  <h1>Hello</h1>
-  <h2 class="mx-2 bg-blue-500 p-2 font-bold text-red-200">Hello</h2>
+  <main class="bg-white">
+    <section class="@container mx-auto max-w-md px-8 py-16">
+      <div class="">
+        <div class="relative isolate">
+          <Logo class="h-7 w-auto text-gray-900" />
+          <div class="absolute top-1/2 right-0 size-9 -translate-y-1/2 rounded-full bg-gray-200"></div>
+        </div>
+        <h1 class="mt-6 text-xl font-semibold tracking-tight text-gray-900">
+          {appName} is requesting access to your account
+        </h1>
+        <p class="mt-2 text-sm text-gray-600">
+          To function properly, this application needs access to your account. If you approve,
+          {appName} may be able to:
+        </p>
+        <ConsentList />
+        <p class="mt-2 text-sm text-gray-600">
+          By approving, you agree to the
+          <a href="#" target="_blank" class="text-blue-700 hover:text-blue-500 hover:underline"
+            >{appName} Privacy Policy
+          </a>
+        </p>
+        <p class="mt-2 text-sm text-gray-600">
+          Approve only if you trust this application and understand what it can do with your account. You can stop
+          granting access at any time through your
+          <a href="#" class="text-blue-700 hover:text-blue-500 hover:underline">account settings</a>
+        </p>
+        <p class="mt-2 text-sm text-gray-600">
+          After approval, you will be redirected back to {appName}
+        </p>
+        <form action="" class="mt-12">
+          <div class="grid grid-cols-1 gap-2 @sm:hidden">
+            <Button>Approve</Button>
+            <Button variant="secondary">Reject</Button>
+          </div>
+          <div class="grid grid-cols-2 gap-2 @max-sm:hidden">
+            <Button variant="secondary">Reject</Button>
+            <Button>Approve</Button>
+          </div>
+        </form>
+      </div>
+    </section>
+  </main>
 </BaseLayout>

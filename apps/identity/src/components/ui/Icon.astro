@@ -1,0 +1,25 @@
+---
+import { icons } from '@iconify-json/ph'
+import { getIconData, iconToSVG, replaceIDs } from '@iconify/utils'
+import type { HTMLAttributes } from 'astro/types'
+
+interface Props extends HTMLAttributes<'svg'> {
+  'icon:name': string
+}
+
+const { 'icon:name': icon, ...attrs } = Astro.props
+
+const iconData = getIconData(icons, icon)
+if (!iconData) {
+  throw new Error(`Icon \'${icon}\' is missing`)
+}
+
+const renderData = iconToSVG(iconData, {
+  width: '1.125em',
+  height: '1.125em',
+})
+---
+
+<svg {...renderData.attributes} {...attrs}>
+  <Fragment set:html={replaceIDs(renderData.body)} />
+</svg>

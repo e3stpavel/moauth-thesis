@@ -1,13 +1,19 @@
 ---
+import { actions } from 'astro:actions'
 import Logo from '~/assets/logo-no-space.svg'
 import ConsentList from '~/components/consent/List.astro'
 import Button from '~/components/ui/Button.astro'
+import Icon from '~/components/ui/Icon.astro'
 import AuthLayout from '~/layouts/AuthLayout.astro'
 
 const appName = 'Test App'
 
-// todo: web cache
-// todo: check auth session before checking for request
+const result = Astro.getActionResult(actions.oauth.consent)
+if (result && !result.error) {
+  return Astro.redirect(result.data, 303)
+}
+
+Astro.response.headers.set('cache-control', 'no-store')
 ---
 
 <AuthLayout>
@@ -37,16 +43,31 @@ const appName = 'Test App'
         <p class="mt-3 text-sm text-gray-600">
           After approval, you will be redirected back to {appName}
         </p>
-        <form action="" class="mt-12">
+        <form method="POST" action={actions.oauth.consent} class="mt-12">
           <div class="grid grid-cols-1 gap-2 @sm:hidden">
-            <Button>Approve</Button>
-            <Button variant="secondary">Reject</Button>
+            <Button type="submit" name="approved" value="true">Approve</Button>
+            <Button type="submit" name="approved" value="false" variant="secondary">Reject</Button>
           </div>
           <div class="grid grid-cols-2 gap-2 @max-sm:hidden">
-            <Button variant="secondary">Reject</Button>
-            <Button>Approve</Button>
+            <Button type="submit" name="approved" value="false" variant="secondary">Reject</Button>
+            <Button type="submit" name="approved" value="true">Approve</Button>
           </div>
         </form>
+        {
+          result?.error && (
+            <div class="mt-3 rounded-md border border-rose-400/20 bg-rose-100 p-2">
+              <div class="grid grid-cols-[auto_1fr] items-start">
+                <div class="grid size-7 place-items-center">
+                  <Icon icon:name="warning" class="text-sm text-rose-700" />
+                </div>
+                <div class="p-1">
+                  <p class="text-sm text-gray-900">We're unable to process your request at the moment</p>
+                  <p class="text-sm text-gray-900">Please try again shortly</p>
+                </div>
+              </div>
+            </div>
+          )
+        }
       </div>
     </section>
   </div>

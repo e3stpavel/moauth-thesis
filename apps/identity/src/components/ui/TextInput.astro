@@ -1,0 +1,32 @@
+---
+import type { HTMLAttributes } from 'astro/types'
+import Icon from './Icon.astro'
+
+interface Props extends HTMLAttributes<'input'> {
+  label: string
+  errors?: string[]
+}
+
+const { label, errors = [], ...attrs } = Astro.props
+const errorId = `${attrs.id}-error`
+---
+
+<div class="space-y-1">
+  <label for={attrs.name} class="block text-sm text-gray-900">
+    <span class="font-semibold">{label}</span>
+    {attrs.required && <span class="align-text-top text-xs text-rose-700">*</span>}
+  </label>
+  <input
+    {...attrs}
+    aria-describedby={errorId}
+    class="block h-8 w-full rounded-md border border-gray-400/40 px-3 text-gray-900 shadow-xs placeholder:text-gray-400 focus-visible:outline-blue-700 sm:text-sm"
+  />
+  {
+    errors.length > 0 && (
+      <p id={errorId}>
+        <Icon icon:name="warning-fill" class="inline-block text-xs text-rose-700" />
+        <span class="text-xs text-rose-700">{errors.at(0)}</span>
+      </p>
+    )
+  }
+</div>

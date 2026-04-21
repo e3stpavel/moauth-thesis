@@ -1,0 +1,50 @@
+---
+import Icon from './Icon.astro'
+
+interface Props {
+  variant?: 'error' | 'info'
+}
+
+const { variant = 'info' } = Astro.props
+
+let icon
+switch (variant) {
+  case 'error': {
+    icon = 'warning'
+    break
+  }
+  default:
+    icon = 'warning-circle'
+}
+---
+
+<div
+  class:list={[
+    'rounded-md border p-2',
+    {
+      'border-blue-400/20 bg-blue-100': variant === 'info',
+      'border-rose-400/20 bg-rose-100': variant === 'error',
+    },
+  ]}
+>
+  <div class="grid grid-cols-[auto_1fr] items-start">
+    <div class="grid size-7 place-items-center">
+      <Icon
+        icon:name={icon}
+        class:list={[
+          'text-sm',
+          {
+            'text-blue-700': variant === 'info',
+            'text-rose-700': variant === 'error',
+          },
+        ]}
+      />
+    </div>
+    <div class="p-1 text-sm text-gray-900">
+      <slot>
+        <p>We're unable to process your request at the moment</p>
+        <p>Please try again shortly</p>
+      </slot>
+    </div>
+  </div>
+</div>

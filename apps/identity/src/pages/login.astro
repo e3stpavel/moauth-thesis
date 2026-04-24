@@ -13,6 +13,10 @@ if (result && !result.error) {
   return Astro.redirect('/', 303)
 }
 
+if (Astro.locals.session) {
+  return Astro.redirect('/')
+}
+
 Astro.response.headers.set('cache-control', 'no-store')
 ---
 
@@ -33,6 +37,7 @@ Astro.response.headers.set('cache-control', 'no-store')
             required
             errors={formErrors.email}
           />
+          {/* TODO: forgot password? */}
           <TextInput
             type="password"
             label="Password"
@@ -48,13 +53,7 @@ Astro.response.headers.set('cache-control', 'no-store')
             and
             <a href="#" target="_blank" class="text-blue-700 hover:text-blue-500 hover:underline"> Privacy Policy </a>
           </p>
-          {
-            result?.error && !isInputError(result.error) && (
-              <Banner variant="error">
-                <p>{result.error.message}</p>
-              </Banner>
-            )
-          }
+          {result?.error && !isInputError(result.error) && <Banner message={result.error.message} variant="error" />}
           <div class="grid grid-cols-1">
             <Button type="submit">Sign in</Button>
           </div>
@@ -63,20 +62,6 @@ Astro.response.headers.set('cache-control', 'no-store')
             <a href="#" class="text-blue-700 hover:text-blue-500 hover:underline">Create one</a>
           </p>
         </form>
-        {
-          /*
-        <div class="relative">
-          <div class="-transform-y-1/2 absolute inset-x-0 top-1/2 h-px bg-gray-300" aria-hidden="true"></div>
-          <div class="relative flex justify-center">
-            <span class="bg-white px-6 text-sm text-gray-600">Or continue with</span>
-          </div>
-        </div>
-        <div class="grid grid-cols-1 gap-2 py-6 sm:grid-cols-2">
-          <Button type="button" variant="secondary">Google</Button>
-          <Button type="button" variant="secondary">GitHub</Button>
-        </div>
-        */
-        }
       </div>
     </section>
   </div>

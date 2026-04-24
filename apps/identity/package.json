@@ -25,6 +25,8 @@
     "@iconify-json/ph": "^1.2.2",
     "@iconify/utils": "^3.1.0",
     "@moauth/eslint-config": "workspace:*",
+    "@node-rs/argon2": "^2.0.2",
+    "@paralleldrive/cuid2": "^3.3.0",
     "@tailwindcss/vite": "^4.2.2",
     "eslint": "^10.2.0",
     "eslint-plugin-format": "^2.0.1",

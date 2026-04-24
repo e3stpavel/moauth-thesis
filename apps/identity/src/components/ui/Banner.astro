@@ -3,9 +3,10 @@ import Icon from './Icon.astro'
 
 interface Props {
   variant?: 'error' | 'info'
+  message: string
 }
 
-const { variant = 'info' } = Astro.props
+const { variant = 'info', message } = Astro.props
 
 let icon
 switch (variant) {
@@ -41,10 +42,16 @@ switch (variant) {
       />
     </div>
     <div class="p-1 text-sm text-gray-900">
-      <slot>
-        <p>We're unable to process your request at the moment</p>
-        <p>Please try again shortly</p>
-      </slot>
+      {
+        message ? (
+          <p>{message}</p>
+        ) : (
+          <Fragment>
+            <p>We're unable to process your request at the moment</p>
+            <p>Please try again shortly</p>
+          </Fragment>
+        )
+      }
     </div>
   </div>
 </div>

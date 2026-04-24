@@ -1,19 +1,11 @@
 import { z } from 'astro/zod'
 import { ActionError, defineAction } from 'astro:actions'
+import { login, logout } from '~/auth/actions'
 
 export const server = {
   auth: {
-    login: defineAction({
-      accept: 'form',
-      input: z.object({
-        email: z.string().email(),
-        password: z.string().min(8),
-      }),
-      handler: async (credentials) => {
-        console.log(credentials)
-        throw new ActionError({ code: 'BAD_REQUEST', message: 'check' })
-      },
-    }),
+    login,
+    logout,
   },
   oauth: {
     consent: defineAction({

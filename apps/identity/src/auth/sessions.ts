@@ -1,13 +1,13 @@
 import { base32 } from '@moauth/encoding'
 import { db, eq, Session, User } from 'astro:db'
 import { randomCUID } from '~/utils/cuid'
-import hasher from '~/utils/hasher'
+import * as hasher from '~/utils/hasher'
 
 const MAX_SESSION_DURATION_SECONDS = 60 * 60 * 24 * 30
 const ACTIVE_SESSION_DURATION_SECONDS = 60 * 60 * 24 * 6
 const SESSION_INACTIVITY_TIMEOUT_SECONDS = 60 * 60 * 1
 
-async function start(userId: string) {
+export async function start(userId: string) {
   const bytes = crypto.getRandomValues(new Uint8Array(32))
   const secret = base32.encode(bytes)
 
@@ -28,7 +28,7 @@ async function start(userId: string) {
   }
 }
 
-async function get(sessionId: string, secret: string) {
+export async function get(sessionId: string, secret: string) {
   const [row] = await db
     .select({
       session: Session,
@@ -65,7 +65,7 @@ async function get(sessionId: string, secret: string) {
   }
 }
 
-async function extend(sessionId: string) {
+export async function extend(sessionId: string) {
   await db
     .update(Session)
     .set({ lastVerifiedAt: new Date() })
@@ -77,10 +77,8 @@ async function extend(sessionId: string) {
   }
 }
 
-async function invalidate(sessionId: string) {
+export async function invalidate(sessionId: string) {
   await db
     .delete(Session)
     .where(eq(Session.id, sessionId))
 }
-
-export default { start, get, extend, invalidate }

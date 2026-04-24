@@ -4,7 +4,7 @@ import { hex } from '@moauth/encoding'
 /**
  * Hashes tokens before storage
  */
-async function hash(str: string) {
+export async function hash(str: string) {
   const bytes = new TextEncoder().encode(str)
   const buffer = await crypto.subtle.digest('SHA-256', bytes)
   return hex.lowercase.encode(new Uint8Array(buffer))
@@ -13,7 +13,7 @@ async function hash(str: string) {
 /**
  * Verifies hashed token from storage against plaintext in constant time
  */
-async function verify(hashed: string, str: string) {
+export async function verify(hashed: string, str: string) {
   const encoder = new TextEncoder()
   const strHash = await hash(str)
   return timingSafeEqual(
@@ -21,5 +21,3 @@ async function verify(hashed: string, str: string) {
     encoder.encode(strHash),
   )
 }
-
-export default { hash, verify }

@@ -1,9 +1,9 @@
 import { ActionError, defineAction } from 'astro:actions'
 import { db, eq, User } from 'astro:db'
 import { randomCUID } from '~/utils/cuid'
+import * as passwordHasher from '~/utils/password-hasher'
 import { credentialsSchema, registrationSchema } from './models'
-import passwordHasher from './password-hasher'
-import sessions from './sessions'
+import * as sessions from './sessions'
 
 export const register = defineAction({
   input: registrationSchema,

@@ -7,12 +7,10 @@ const hashOptions = {
   timeCost: 2,
 }
 
-function hash(password: string, signal?: AbortSignal) {
+export function hash(password: string, signal?: AbortSignal) {
   return argon2.hash(password, hashOptions, signal)
 }
 
-function verify(hashed: string, password: string, signal?: AbortSignal) {
+export function verify(hashed: string, password: string, signal?: AbortSignal) {
   return argon2.verify(hashed, password, hashOptions, signal)
 }
-
-export default { hash, verify }

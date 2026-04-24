@@ -1,6 +1,6 @@
 import { defineMiddleware } from 'astro:middleware'
 import { tokenSchema } from './models'
-import sessions from './sessions'
+import * as sessions from './sessions'
 
 export const validateSession = defineMiddleware(async (context, next) => {
   context.locals.session = null

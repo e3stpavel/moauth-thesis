@@ -1,6 +1,6 @@
 import { db, User } from 'astro:db'
-import passwordHasher from '~/auth/password-hasher'
 import { randomCUID } from '~/utils/cuid'
+import * as passwordHasher from '~/utils/password-hasher'
 
 // https://astro.build/db/seed
 export default async function seed() {

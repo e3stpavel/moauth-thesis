@@ -34,7 +34,7 @@ export const register = defineAction({
       })
     }
 
-    const session = await sessions.start()
+    const session = await sessions.start(user.id)
     context.cookies.set('sessionid', session.id + session.secret, {
       path: '/',
       sameSite: 'lax',
@@ -77,7 +77,7 @@ export const login = defineAction({
       })
     }
 
-    const session = await sessions.start()
+    const session = await sessions.start(user.id)
     context.cookies.set('sessionid', session.id + session.secret, {
       path: '/',
       sameSite: 'lax',

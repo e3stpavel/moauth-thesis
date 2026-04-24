@@ -5,7 +5,7 @@ interface User {
 
 interface Session {
   id: string
-  // user: User
+  user: User
 }
 
 declare namespace App {

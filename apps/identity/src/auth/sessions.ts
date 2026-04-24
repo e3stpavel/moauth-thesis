@@ -7,7 +7,7 @@ const MAX_SESSION_DURATION_SECONDS = 60 * 60 * 24 * 30
 const ACTIVE_SESSION_DURATION_SECONDS = 60 * 60 * 24 * 6
 const SESSION_INACTIVITY_TIMEOUT_SECONDS = 60 * 60 * 1
 
-async function start() {
+async function start(userId: string) {
   const bytes = crypto.getRandomValues(new Uint8Array(32))
   const secret = base32.encode(bytes)
 
@@ -17,6 +17,7 @@ async function start() {
     .values({
       id: randomCUID(),
       secretHash,
+      userId,
     })
     .returning()
 
@@ -31,11 +32,11 @@ async function get(sessionId: string, secret: string) {
   const [row] = await db
     .select({
       session: Session,
-      // user: User,
+      user: User,
     })
     .from(Session)
     .where(eq(Session.id, sessionId))
-    // .innerJoin(User, eq(User.id, Session.userId))
+    .innerJoin(User, eq(User.id, Session.userId))
 
   if (!row) {
     return null
@@ -58,6 +59,7 @@ async function get(sessionId: string, secret: string) {
 
   return {
     id: session.id,
+    user: row.user,
     expiresIn: Math.floor((expiresAt - Date.now()) / 1000),
     inactive: Date.now() - session.lastVerifiedAt.getTime() >= 1000 * SESSION_INACTIVITY_TIMEOUT_SECONDS,
   }

@@ -13,9 +13,9 @@ const Session = defineTable({
   columns: {
     id: column.text({ primaryKey: true }),
     secretHash: column.text(),
+    userId: column.text({ references: () => User.columns.id }),
     lastVerifiedAt: column.date({ default: NOW }),
     createdAt: column.date({ default: NOW }),
-    // expiredAt: column.date(),
   },
 })
 

@@ -11,4 +11,11 @@ export default defineConfig({
       plugins: ['prettier-plugin-tailwindcss'],
     },
   },
+
+  // enforce single quotes for snake_case
+  rules: {
+    'camelcase': 'error',
+    'dot-notation': ['error', { allowPattern: '^[a-z]+(_[a-z]+)+$' }],
+    'style/quote-props': ['error', 'consistent'],
+  },
 })

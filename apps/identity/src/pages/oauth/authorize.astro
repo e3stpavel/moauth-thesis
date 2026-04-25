@@ -1,53 +1,17 @@
 ---
+import { Code } from 'astro:components'
 import Logo from '~/assets/logo-no-space.svg'
 import AuthLayout from '~/layouts/AuthLayout.astro'
-import authorize from '~/app/authorize'
+import { authorize } from '~/oauth/routes'
 
-async function getRequestForm() {
-  switch (Astro.request.method) {
-    case 'GET': {
-      return Astro.url.searchParams
-    }
-    case 'POST': {
-      const body = await Astro.request.text()
-      const form = new URLSearchParams(body)
-      return form
-    }
-    default:
-      throw new Error('method not allowed')
-  }
+const response = await authorize(Astro)
+if (response.status === 302 || response.status === 303) {
+  return response
 }
 
-const error = { code: 'server_error', message: 'Internal server error' }
+const error = await response.json()
 
-try {
-  // if used `await` on the page, Astro will wait until it can send request,
-  //  if you move `await` to components, the response will be chunked and streaming will be used
-  const form = await getRequestForm()
-  const result = await authorize.handle(form)
-
-  if (!result.success) {
-    return Astro.redirect(result.data, Astro.request.method === 'GET' ? 302 : 303)
-  }
-
-  const consentRequest = result.data
-  // replace with builtin sessions
-  Astro.cookies.set('requestid', consentRequest.requestId, {
-    path: '/',
-    sameSite: 'lax',
-    secure: import.meta.env.PROD,
-    httpOnly: true,
-    maxAge: consentRequest.expiresIn,
-  })
-
-  return Astro.redirect('/oauth/consent', Astro.request.method === 'GET' ? 302 : 303)
-} catch (e) {
-  if (e instanceof Error) {
-    error.code = 'invalid_request'
-    error.message = e.message
-  }
-}
-
+Astro.response.status = response.status
 Astro.response.headers.set('cache-control', 'no-store')
 ---
 
@@ -73,7 +37,14 @@ Astro.response.headers.set('cache-control', 'no-store')
         </p>
         <hr class="my-6 text-gray-300" />
         <p class="text-sm text-gray-600">Troubleshooting details:</p>
-        <dl class="mt-3 space-y-3">
+        <Code
+          class="mt-1 rounded-md border border-gray-400/40 bg-gray-100! text-sm select-all"
+          code={JSON.stringify(error, null, 2)}
+          lang="json"
+          wrap={false}
+          theme="github-light-default"
+        />
+        <!-- <dl class="mt-3 space-y-3">
           <div class="grid grid-cols-1 gap-2 @sm:grid-cols-2">
             <dt class="text-sm text-gray-600">Error</dt>
             <dd class="text-sm text-gray-600 @sm:text-right">
@@ -88,7 +59,7 @@ Astro.response.headers.set('cache-control', 'no-store')
               <code>{error.message}</code>
             </dd>
           </div>
-        </dl>
+        </dl> -->
       </div>
     </section>
   </div>

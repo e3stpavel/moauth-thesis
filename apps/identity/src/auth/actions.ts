@@ -9,11 +9,10 @@ export const register = defineAction({
   input: registrationSchema,
   accept: 'form',
   handler: async (credentials, context) => {
-    // user can have only single session right now
+    // user cannot register if he is already logged in,
+    //  for now we don't support multiple accounts switching
     if (context.locals.session) {
-      throw new ActionError({
-        code: 'FORBIDDEN',
-      })
+      throw new ActionError({ code: 'FORBIDDEN' })
     }
 
     const passwordHash = await passwordHasher.hash(credentials.password)
@@ -49,10 +48,10 @@ export const login = defineAction({
   input: credentialsSchema,
   accept: 'form',
   handler: async (credentials, context) => {
+    // when supporting multiple account we might want to check actual credentials before proceeding
+    //  now to simplify it and improve? UX, we will return success if valid session exists ignoring credentials
     if (context.locals.session) {
-      throw new ActionError({
-        code: 'FORBIDDEN',
-      })
+      return
     }
 
     const [user] = await db
@@ -92,9 +91,7 @@ export const logout = defineAction({
   handler: async (_, context) => {
     const session = context.locals.session
     if (!session) {
-      throw new ActionError({
-        code: 'UNAUTHORIZED',
-      })
+      return
     }
 
     await sessions.invalidate(session.id)

@@ -61,3 +61,12 @@ export const authorizeRequestSchema = z.object({
   'scope': scopeSchema.optional(),
   'state': stateSchema, // we require state
 })
+
+export const consentRequestIdSchema = z.string()
+  .length(Math.ceil(4 * 32 / 3))
+  .base64url()
+
+export const consentResponseSchema = z.object({
+  'approved': z.coerce.boolean(),
+  'request_id': consentRequestIdSchema,
+})

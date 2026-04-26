@@ -1,19 +1,43 @@
 ---
+import { formUrlEncoded } from '@moauth/encoding'
 import { actions } from 'astro:actions'
 import Logo from '~/assets/logo-no-space.svg'
 import ConsentList from '~/components/consent/List.astro'
 import Button from '~/components/ui/Button.astro'
 import Icon from '~/components/ui/Icon.astro'
 import AuthLayout from '~/layouts/AuthLayout.astro'
-
-const appName = 'Test App'
+import * as consents from '~/oauth/consents'
+import { validateRequestParameter } from '~/oauth/parameters'
+import { consentRequestIdSchema } from '~/oauth/models'
 
 const result = Astro.getActionResult(actions.oauth.consent)
 if (result && !result.error) {
+  // it should be generally safe to redirect with full url here as action result
+  //  will be saved inside `locals` in middleware which is only accessible on the server
   return Astro.redirect(result.data, 303)
 }
 
+// if result of action is error, we will fallthrough and eventually `consentRequest` validation will fail
+
+const query = Astro.url.searchParams
+const [validRequestId, requestId] = validateRequestParameter('state', query, consentRequestIdSchema)
+if (!validRequestId) {
+  return new Response(null, { status: 400 })
+}
+
+const consentRequest = await consents.get(requestId)
+if (!consentRequest) {
+  return new Response(null, { status: 400 })
+}
+
+if (!Astro.locals.session) {
+  // redirectTo '/consent?state=<id>', requiredAmr ['pwd', 'otp', 'mfa'], maxAge 15 mins
+  const redirectTo = `/consent?state=${requestId}`
+  return Astro.redirect(`/login?redirect_uri=${formUrlEncoded.encode(redirectTo)}`)
+}
+
 Astro.response.headers.set('cache-control', 'no-store')
+Astro.response.headers.set('referrer-policy', 'strict-origin')
 ---
 
 <AuthLayout>
@@ -22,17 +46,17 @@ Astro.response.headers.set('cache-control', 'no-store')
       <div class="">
         <Logo class="h-7 w-auto text-gray-900" />
         <h1 class="mt-6 text-xl font-semibold tracking-tight text-gray-900">
-          {appName} is requesting access to your account
+          {consentRequest.client.name} is requesting access to your account
         </h1>
         <p class="mt-3 text-sm text-gray-600">
           To function properly, this application needs access to your account. If you approve,
-          {appName} may be able to:
+          {consentRequest.client.name} may be able to:
         </p>
         <ConsentList />
         <p class="mt-3 text-sm text-gray-600">
           By approving, you agree to the
-          <a href="#" target="_blank" class="text-blue-700 hover:text-blue-500 hover:underline"
-            >{appName} Privacy Policy
+          <a href="#" target="_blank" class="text-blue-700 hover:text-blue-500 hover:underline">
+            {consentRequest.client.name} Privacy Policy
           </a>
         </p>
         <p class="mt-3 text-sm text-gray-600">
@@ -41,9 +65,16 @@ Astro.response.headers.set('cache-control', 'no-store')
           <a href="#" class="text-blue-700 hover:text-blue-500 hover:underline">account settings</a>
         </p>
         <p class="mt-3 text-sm text-gray-600">
-          After approval, you will be redirected back to {appName}
+          After approval, you will be redirected back to
+          <code
+            class="inline-block rounded border border-gray-400/40 bg-gray-100 box-decoration-clone px-1 text-gray-700"
+          >
+            {consentRequest.redirectUrl.origin}
+          </code>
         </p>
         <form method="POST" action={actions.oauth.consent} class="mt-12">
+          {/* TODO: csrf token */}
+          <input type="hidden" name="request_id" value={requestId} />
           <div class="grid grid-cols-1 gap-2 @sm:hidden">
             <Button type="submit" name="approved" value="true">Approve</Button>
             <Button type="submit" name="approved" value="false" variant="secondary">Reject</Button>
@@ -54,6 +85,7 @@ Astro.response.headers.set('cache-control', 'no-store')
           </div>
         </form>
         {
+          /*
           result?.error && (
             <div class="mt-3 rounded-md border border-rose-400/20 bg-rose-100 p-2">
               <div class="grid grid-cols-[auto_1fr] items-start">
@@ -67,6 +99,7 @@ Astro.response.headers.set('cache-control', 'no-store')
               </div>
             </div>
           )
+        */
         }
       </div>
     </section>

@@ -20,3 +20,9 @@ export const credentialsSchema = z.object({
 export const registrationSchema = credentialsSchema.extend({
   name: z.string().min(3),
 })
+
+// to avoid attack surface, let's use whitelist of relative paths
+export const redirectUriSchema = z.union([
+  z.literal('/'),
+  z.string().startsWith('/consent'),
+])

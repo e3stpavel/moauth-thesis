@@ -2,8 +2,10 @@ import type { APIRoute } from 'astro'
 import { readBodyWithLimit } from '~/utils/body'
 import { redirectWithError, validateRedirectUri } from './authorize'
 import * as clients from './clients'
+import * as consents from './consents'
 import { authorizeRequestSchema, stateSchema } from './models'
 import { validateRequestParameter, validateRequestParameters } from './parameters'
+import { validateScope } from './scopes'
 
 export const authorize: APIRoute = async (context) => {
   let form
@@ -64,6 +66,7 @@ export const authorize: APIRoute = async (context) => {
   if (!validState) {
     return redirectWithError(context, redirectUrl, { 'error': 'invalid_request', 'error_description': stateError })
   }
+  redirectUrl.searchParams.set('state', state)
 
   try {
     const [validParameters, parameters, parametersError] = validateRequestParameters(
@@ -75,30 +78,27 @@ export const authorize: APIRoute = async (context) => {
       }),
     )
     if (!validParameters) {
-      return redirectWithError(context, redirectUrl, {
-        'state': state,
-        'error': 'invalid_request',
-        'error_description': parametersError,
-      })
+      return redirectWithError(context, redirectUrl, { 'error': 'invalid_request', 'error_description': parametersError })
     }
 
     // TODO: pick strategy
-    // only support 'code' now, reject implicit and hybrid flows
+    //  scopes are resolved also depending on strategy, i.e. forbid offline_access for client_credentials flow
+    //  but now only support 'code', reject implicit and hybrid flows
     if (!(parameters['response_type'].length === 1 && parameters['response_type'][0] === 'code')) {
-      return redirectWithError(context, redirectUrl, {
-        'state': state,
-        'error': 'unsupported_response_type',
-      })
+      return redirectWithError(context, redirectUrl, { 'error': 'unsupported_response_type' })
     }
-    // scopes are resolved also depending on strategy, i.e. forbid offline_access for client_credentials flow
 
-    return context.redirect('/oauth?state=jehe=\\/;', context.request.method === 'GET' ? 302 : 303)
+    // eslint-disable-next-line dot-notation
+    const [validScope, scope] = validateScope('authorization_code', client, parameters['scope'])
+    if (!validScope) {
+      return redirectWithError(context, redirectUrl, { 'error': 'invalid_scope' })
+    }
+
+    const consentRequest = await consents.create(client.id, redirectUrl.href, scope)
+    return context.redirect(`/consent?state=${consentRequest.id}`, context.request.method === 'GET' ? 302 : 303)
   }
   catch (e) {
     console.error(e)
-    return redirectWithError(context, redirectUrl, {
-      'state': state,
-      'error': 'server_error',
-    })
+    return redirectWithError(context, redirectUrl, { 'error': 'server_error' })
   }
 }

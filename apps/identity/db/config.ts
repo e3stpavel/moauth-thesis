@@ -19,12 +19,12 @@ const Session = defineTable({
   },
 })
 
-const ConsentRequests = defineTable({
+const ConsentRequest = defineTable({
   columns: {
-    id: column.text({ primaryKey: true }),
+    idHash: column.text({ primaryKey: true }),
     clientId: column.text(),
     redirectUri: column.text(),
-    state: column.text(),
+    scope: column.text(),
     createdAt: column.date({ default: NOW }),
   },
 })
@@ -34,6 +34,6 @@ export default defineDb({
   tables: {
     User,
     Session,
-    ConsentRequests,
+    ConsentRequest,
   },
 })

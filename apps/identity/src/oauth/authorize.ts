@@ -17,20 +17,7 @@ export function validateRedirectUri(client: Client, redirectUri: string | undefi
   return new URL(redirectUri)
 }
 
-// export function validateScope(client: Client, scopes: string[] | undefined): string[] {
-//   // right now we ignore that, but in future we need to check scopes against client
-//   //  basically whether client registered is allowed to access certain scopes (read write edit delete)
-//   //  The authorization server MAY fully or partially ignore the scope requested by the client
-//   if (!scopes) {
-//     return []
-//   }
-
-//   if scopes.includes()
-// }
-
-type ProtocolErrorParameters = 'error' | 'error_description' | 'error_uri' | 'state'
-
-type ProtocolError = Partial<Record<ProtocolErrorParameters | (string & {}), string>>
+type ProtocolError = Partial<Record<'error' | 'error_description' | 'error_uri' | (string & {}), string>>
 
 export function redirectWithError(context: APIContext, redirectUrl: URL, error: ProtocolError): Response {
   Object.entries(error)

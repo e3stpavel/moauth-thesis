@@ -1,0 +1,34 @@
+---
+import Button from '~/components/ui/Button.astro'
+
+const session = Astro.locals.session
+---
+
+{
+  // if a lot of client components require csrf token, consider putting it to script json or meta tag in body
+  session && (
+    <Button variant="secondary" size="sm" class="logout-button" data-csrf-token={session.csrfToken}>
+      Logout
+    </Button>
+  )
+}
+
+<script>
+  import { actions, getActionPath } from 'astro:actions'
+  import { navigate } from 'astro:transitions/client'
+
+  const buttons = document.querySelectorAll<HTMLButtonElement>('button.logout-button')
+  buttons.forEach((button) => {
+    button.addEventListener('click', async () => {
+      const response = await fetch(getActionPath(actions.auth.logout), {
+        method: 'POST',
+        headers: {
+          'x-csrf-token': button.dataset.csrfToken ?? '',
+        },
+      })
+      if (response.ok) {
+        navigate('/')
+      }
+    })
+  })
+</script>

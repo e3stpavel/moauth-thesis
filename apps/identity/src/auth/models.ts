@@ -26,3 +26,7 @@ export const redirectUriSchema = z.union([
   z.literal('/'),
   z.string().startsWith('/consent'),
 ])
+
+export const csrfTokenSchema = z.string()
+  .length(Math.ceil(4 * 40 / 3))
+  .base64url()

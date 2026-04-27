@@ -78,7 +78,7 @@ headers.forEach((value, name) => {
           </code>
         </p>
         <form method="POST" action={actions.oauth.consent} class="mt-12">
-          {/* TODO: csrf token */}
+          <input type="hidden" name="csrf_token" value={Astro.locals.session.csrfToken} />
           <input type="hidden" name="request_id" value={requestId} />
           <div class="grid grid-cols-1 gap-2 @sm:hidden">
             <Button type="submit" name="approved" value="true">Approve</Button>

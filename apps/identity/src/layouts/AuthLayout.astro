@@ -1,6 +1,7 @@
 ---
 import Icon from '~/components/ui/Icon.astro'
 import BaseLayout from './BaseLayout.astro'
+import LogoutButton from '~/components/auth/LogoutButton.astro'
 ---
 
 <BaseLayout>
@@ -9,6 +10,7 @@ import BaseLayout from './BaseLayout.astro'
     <div class="mx-auto max-w-screen-2xl px-4 sm:px-6 lg:px-16">
       <div class="flex h-16 items-center justify-end-safe">
         <div class="size-9 rounded-full bg-gray-100"></div>
+        <LogoutButton />
       </div>
     </div>
   </header>

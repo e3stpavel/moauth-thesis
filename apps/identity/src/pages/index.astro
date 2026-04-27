@@ -1,4 +1,6 @@
 ---
+import LogoutButton from '~/components/auth/LogoutButton.astro'
+
 const session = Astro.locals.session
 const user = session?.user
 ---
@@ -19,6 +21,7 @@ const user = session?.user
         <Fragment>
           <p>{user?.id}</p>
           <p>{user?.email}</p>
+          <LogoutButton />
         </Fragment>
       ) : (
         <a href="/login">Login</a>

@@ -6,7 +6,7 @@ interface Props extends HTMLAttributes<'button'> {
   size?: 'sm' | 'md' | 'lg'
 }
 
-const { variant = 'primary', size = 'md', ...attrs } = Astro.props
+const { variant = 'primary', size = 'md', class: className, ...attrs } = Astro.props
 ---
 
 <button
@@ -21,6 +21,7 @@ const { variant = 'primary', size = 'md', ...attrs } = Astro.props
       'border-green-900/40 bg-green-800 text-white hover:bg-green-700 active:bg-green-900': variant === 'primary',
       'border-gray-400/40 bg-gray-100 text-gray-950 hover:bg-gray-50 active:bg-gray-200': variant === 'secondary',
     },
+    className,
   ]}
   {...attrs}
 >

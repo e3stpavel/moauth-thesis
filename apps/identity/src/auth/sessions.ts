@@ -2,6 +2,7 @@ import { base32 } from '@moauth/encoding'
 import { db, eq, Session, User } from 'astro:db'
 import { randomCUID } from '~/utils/cuid'
 import * as hasher from '~/utils/hasher'
+import * as csrfTokens from './csrf-tokens'
 
 const MAX_SESSION_DURATION_SECONDS = 60 * 60 * 24 * 30
 const ACTIVE_SESSION_DURATION_SECONDS = 60 * 60 * 24 * 6
@@ -17,6 +18,7 @@ export async function start(userId: string) {
     .values({
       id: randomCUID(),
       secretHash,
+      csrfToken: csrfTokens.generate(),
       userId,
     })
     .returning()
@@ -59,6 +61,7 @@ export async function get(sessionId: string, secret: string) {
 
   return {
     id: session.id,
+    csrfToken: session.csrfToken,
     user: row.user,
     expiresIn: Math.floor((expiresAt - Date.now()) / 1000),
     inactive: Date.now() - session.lastVerifiedAt.getTime() >= 1000 * SESSION_INACTIVITY_TIMEOUT_SECONDS,

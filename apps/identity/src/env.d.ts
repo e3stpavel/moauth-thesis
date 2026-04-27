@@ -5,6 +5,7 @@ interface User {
 
 interface Session {
   id: string
+  csrfToken: string
   user: User
 }
 

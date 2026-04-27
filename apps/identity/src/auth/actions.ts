@@ -48,10 +48,10 @@ export const login = defineAction({
   input: credentialsSchema,
   accept: 'form',
   handler: async (credentials, context) => {
-    // when supporting multiple account we might want to check actual credentials before proceeding
-    //  now to simplify it and improve? UX, we will return success if valid session exists ignoring credentials
+    // now hitting it directly will return 403, hitting it through login form, will silently log you in
+    //  UX question, idk how to handle this better at the moment
     if (context.locals.session) {
-      return
+      throw new ActionError({ code: 'FORBIDDEN' })
     }
 
     const [user] = await db

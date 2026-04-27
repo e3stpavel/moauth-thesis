@@ -24,6 +24,7 @@ if (result && !result.error) {
   return Astro.redirect(redirectUri, 303)
 }
 
+// if user was logged in (has active session), it will redirect him anyways, even with errors from action
 if (Astro.locals.session) {
   return Astro.redirect(redirectUri)
 }

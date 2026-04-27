@@ -22,7 +22,7 @@ export function validateRequestParameters<TSchema extends z.AnyZodObject>(
   return [true, acc, undefined]
 }
 
-export function validateRequestParameter<TSchema extends z.ZodType<any, any, string>>(
+export function validateRequestParameter<TSchema extends z.ZodTypeAny>(
   name: string,
   form: URLSearchParams,
   schema: TSchema,

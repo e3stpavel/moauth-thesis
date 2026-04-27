@@ -3,7 +3,9 @@ import type { Client } from './clients'
 
 // type Result<T> = [true, T] | [false, undefined]
 
-export function validateRedirectUri(client: Client, redirectUri: string | undefined): URL | null {
+type Nullish<T> = T | null | undefined
+
+export function validateRedirectUri(client: Client, redirectUri: Nullish<string>): URL | null {
   if (!redirectUri) {
     if (client.redirectUris.length === 1) {
       return new URL(client.redirectUris[0]!)

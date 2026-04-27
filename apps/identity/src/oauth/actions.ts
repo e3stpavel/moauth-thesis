@@ -1,4 +1,5 @@
 import { ActionError, defineAction } from 'astro:actions'
+import * as authorizationCodes from './authorization-codes'
 import * as consents from './consents'
 import { consentResponseSchema } from './models'
 
@@ -16,14 +17,19 @@ export const consent = defineAction({
       throw new ActionError({ code: 'FORBIDDEN' })
     }
 
-    const redirectUrl = new URL(consentRequest.redirectUrl)
+    const redirectUrl = consentRequest.redirectUrl
+    redirectUrl.searchParams.set('state', consentRequest.state)
+
     if (consentResponse.approved) {
       // TODO: save user consent to avoid asking them later
 
-      // TODO: store code, 1 min exp, single use, detect reuse,
-      //  bound to the client identifier and redirection URI
-      const code = 'code1234'
-      redirectUrl.searchParams.set('code', code)
+      const code = await authorizationCodes.create(
+        session.user.id,
+        consentRequest.client.id,
+        consentRequest.redirectUri,
+        consentRequest.scope,
+      )
+      redirectUrl.searchParams.set('code', code.id)
     }
     else {
       redirectUrl.searchParams.set('error', 'access_denied')

@@ -11,6 +11,15 @@ export const formatServerErrors = defineMiddleware(async (context, next) => {
   }
   catch (e) {
     console.error(e)
-    return Response.json({ 'error': 'server_error' }, { status: 500 })
+    return Response.json(
+      { 'error': 'server_error' },
+      {
+        status: 500,
+        headers: {
+          'cache-control': 'no-store',
+          'pragma': 'no-cache', // will be deprecated in 2.1
+        },
+      },
+    )
   }
 })

@@ -23,7 +23,19 @@ const ConsentRequest = defineTable({
   columns: {
     idHash: column.text({ primaryKey: true }),
     clientId: column.text(),
-    redirectUri: column.text(),
+    redirectUri: column.text({ optional: true }),
+    scope: column.text(),
+    state: column.text(),
+    createdAt: column.date({ default: NOW }),
+  },
+})
+
+const AuthorizationCode = defineTable({
+  columns: {
+    idHash: column.text({ primaryKey: true }),
+    clientId: column.text(),
+    userId: column.text({ references: () => User.columns.id }),
+    redirectUri: column.text({ optional: true }),
     scope: column.text(),
     createdAt: column.date({ default: NOW }),
   },
@@ -35,5 +47,6 @@ export default defineDb({
     User,
     Session,
     ConsentRequest,
+    AuthorizationCode,
   },
 })

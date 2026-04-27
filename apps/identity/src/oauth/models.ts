@@ -1,4 +1,6 @@
+import { base32, base64, formUrlEncoded, hex } from '@moauth/encoding'
 import { z } from 'astro/zod'
+import { splitN } from '~/utils/strings'
 
 // if value of response_type parameter is anything besides code or token,
 //  the server can return an invalid_request error
@@ -70,3 +72,62 @@ export const consentResponseSchema = z.object({
   'approved': z.coerce.boolean(),
   'request_id': consentRequestIdSchema,
 })
+
+export const clientSecretSchema = z.string()
+  .length(32 * 2)
+  .regex(hex.uppercase.regex)
+
+export const clientSecretPostSchema = z.object({
+  'client_id': clientIdSchema,
+  'client_secret': clientSecretSchema,
+})
+
+export const clientSecretBasicSchema = z.string()
+  .startsWith('Basic ')
+  .transform(input => input.slice('Basic '.length))
+  .pipe(
+    z.string().base64(),
+  )
+  .transform(base64.decode)
+  .transform(input => splitN(new TextDecoder().decode(input), ':', 2))
+  .transform((input, context) => {
+    return input.map((encoded) => {
+      if (!formUrlEncoded.validate(encoded)) {
+        context.addIssue({
+          code: 'custom',
+          message: 'client_id and client_secret must be encoded using application/x-www-form-urlencoded',
+        })
+        return ''
+      }
+      return formUrlEncoded.decode(encoded)
+    })
+  })
+  .pipe(
+    z.tuple([
+      clientIdSchema,
+      clientSecretSchema,
+    ]),
+  )
+
+export const authorizationCodeGrantSchema = z.object({
+  'grant_type': z.literal('authorization_code'),
+  'code': z.string()
+    .length(Math.ceil(32 * 8 / 5))
+    .regex(base32.regex),
+  'redirect_uri': redirectUrlSchema.optional(),
+})
+
+export const refreshTokenGrantSchema = z.object({
+  'grant_type': z.literal('refresh_token'),
+  'refresh_token': z.string(),
+})
+
+export const clientCredentialsGrantSchema = z.object({
+  'grant_type': z.literal('client_credentials'),
+})
+
+// export const tokenRequestSchema = z.union([
+//   authorizationCodeGrantSchema,
+//   refreshTokenGrantSchema,
+//   clientCredentialsGrantSchema,
+// ])

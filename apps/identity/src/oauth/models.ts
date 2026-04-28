@@ -109,8 +109,9 @@ export const clientSecretBasicSchema = z.string()
     ]),
   )
 
+export const grantTypeSchema = z.string()
+
 export const authorizationCodeGrantSchema = z.object({
-  'grant_type': z.literal('authorization_code'),
   'code': z.string()
     .length(Math.ceil(32 * 8 / 5))
     .regex(base32.regex),
@@ -118,16 +119,10 @@ export const authorizationCodeGrantSchema = z.object({
 })
 
 export const refreshTokenGrantSchema = z.object({
-  'grant_type': z.literal('refresh_token'),
   'refresh_token': z.string(),
+  'scope': scopeSchema.optional(),
 })
 
 export const clientCredentialsGrantSchema = z.object({
-  'grant_type': z.literal('client_credentials'),
+  'scope': scopeSchema.optional(),
 })
-
-// export const tokenRequestSchema = z.union([
-//   authorizationCodeGrantSchema,
-//   refreshTokenGrantSchema,
-//   clientCredentialsGrantSchema,
-// ])

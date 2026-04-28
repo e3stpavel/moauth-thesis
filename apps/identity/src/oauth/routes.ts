@@ -1,13 +1,12 @@
 import type { APIRoute } from 'astro'
 import { readBodyWithLimit } from '~/utils/body'
-import * as authorizationCodes from './authorization-codes'
 import { redirectWithError, validateRedirectUri } from './authorize'
 import * as clients from './clients'
 import * as consents from './consents'
-import { authorizationCodeGrantSchema, authorizeRequestSchema, clientIdSchema, stateSchema } from './models'
+import { authorizeRequestSchema, clientIdSchema, stateSchema } from './models'
 import { validateRequestParameter, validateRequestParameters } from './parameters'
 import { validateScope } from './scopes'
-import { respondWithInvalidClient, validateClientAuthRequest } from './token'
+import { respondWithInvalidClient, validateClientAuth, validateGrantType } from './token'
 
 export const authorize: APIRoute = async (context) => {
   const headers = new Headers()
@@ -142,12 +141,9 @@ export const token: APIRoute = async (context) => {
   const encoded = new TextDecoder().decode(body)
   const form = new URLSearchParams(encoded)
 
-  const [validClientAuthRequest, clientAuthHandlers, clientAuthRequestError] = validateClientAuthRequest(
-    form,
-    context.request.headers,
-  )
-  if (!validClientAuthRequest) {
-    return Response.json({ 'error': 'invalid_request', 'error_description': clientAuthRequestError }, { status: 400, headers })
+  const [validClientAuth, clientAuthHandlers, clientAuthError] = validateClientAuth(form, context.request.headers)
+  if (!validClientAuth) {
+    return Response.json({ 'error': 'invalid_request', 'error_description': clientAuthError }, { status: 400, headers })
   }
 
   if (clientAuthHandlers.length > 1) {
@@ -169,7 +165,7 @@ export const token: APIRoute = async (context) => {
   let client
   const clientAuthHandler = clientAuthHandlers[0]
   if (clientAuthHandler) {
-    client = await clientAuthHandler()
+    client = await clientAuthHandler.handle()
   }
   else if (clientId) {
     // try to identify (potentially public) client with client_id parameter instead
@@ -186,27 +182,25 @@ export const token: APIRoute = async (context) => {
     return respondWithInvalidClient('client_id does not match authenticated client', headers)
   }
 
-  // select grant_type, validate appropriate request parameters, unsupported_grant_type
-  // unauthorized_client - The authenticated client is not authorized to use this authorization grant type (client_credentials)
-
-  // before select validate parameters -> invalid_request (like in client auth)
-  // after selecting grant_type, if selected is null -> unsupported_grant_type
-  // after that we can get from handler grant_type name and compare against list of possible for client -> unauthorized_client
-  // then call grant_type handler and if error -> invalid_grant
-  // TODO: invalid_scope for refresh_token, client_credentials?
-
-  // wip: keep only `authorization_code` now
-  const [validParameters, parameters, parametersError] = validateRequestParameters(form, authorizationCodeGrantSchema)
-  if (!validParameters) {
-    return Response.json({ 'error': 'invalid_request', 'error_description': parametersError }, { status: 400, headers })
+  const [validGrantType, grantHandler, grantTypeError] = validateGrantType(form)
+  if (!validGrantType) {
+    return Response.json({ 'error': 'invalid_request', 'error_description': grantTypeError }, { status: 400, headers })
+  }
+  if (!grantHandler) {
+    return Response.json({ 'error': 'unsupported_grant_type' }, { status: 400, headers })
+  }
+  if (!client.grantTypes.includes(grantHandler.grantType)) {
+    return Response.json({ 'error': 'unauthorized_client' }, { status: 400, headers })
   }
 
-  // eslint-disable-next-line dot-notation
-  const authorizationCode = await authorizationCodes.use(parameters['code'], client, parameters['redirect_uri'])
-  if (!authorizationCode) {
+  const grant = await grantHandler.handle(client)
+  if (!grant) {
     return Response.json({ 'error': 'invalid_grant' }, { status: 400, headers })
   }
 
+  console.log(grant)
+
+  // TODO: invalid_scope for refresh_token, client_credentials?
   // create access_token and refresh_token (if offline_access)
 
   return Response.json({})

@@ -22,7 +22,7 @@ const Session = defineTable({
 
 const ConsentRequest = defineTable({
   columns: {
-    idHash: column.text({ primaryKey: true }),
+    id: column.text({ primaryKey: true }),
     clientId: column.text(),
     redirectUri: column.text({ optional: true }),
     scope: column.text(),

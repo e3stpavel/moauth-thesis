@@ -112,7 +112,7 @@ export const authorize: APIRoute = async (context) => {
 
     // include here redirect_uri **as in request**
     const consentRequest = await consents.create(client.id, clientAndRedirectUri['redirect_uri'], scope.encode(), state)
-    return context.redirect(`/consent?state=${consentRequest.id}`, context.request.method === 'GET' ? 302 : 303)
+    return context.redirect(`/consent?state=${consentRequest.token}`, context.request.method === 'GET' ? 302 : 303)
   }
   catch (e) {
     console.error(e)

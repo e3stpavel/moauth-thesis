@@ -8,30 +8,28 @@ const MAX_CONSENT_REQUEST_DURATION_SECONDS = 60 * 15
 
 export async function create(clientId: string, redirectUri: string | undefined, scope: string, state: string) {
   const bytes = crypto.getRandomValues(new Uint8Array(32))
-  const requestId = base64url.encode(bytes)
-  const requestIdHash = await hasher.hash(requestId)
+  const token = base64url.encode(bytes)
+  const requestId = await hasher.hash(token)
   await db
     .insert(ConsentRequest)
     .values({
-      idHash: requestIdHash,
+      id: requestId,
       clientId,
       redirectUri,
       scope,
       state,
     })
 
-  return {
-    id: requestId,
-  }
+  return { token }
 }
 
-export async function get(requestId: string) {
-  const requestIdHash = await hasher.hash(requestId)
+export async function get(token: string) {
+  const requestId = await hasher.hash(token)
   const [consentRequest] = await db
     .select()
     .from(ConsentRequest)
     .where(
-      eq(ConsentRequest.idHash, requestIdHash),
+      eq(ConsentRequest.id, requestId),
     )
 
   if (!consentRequest) {
@@ -42,7 +40,7 @@ export async function get(requestId: string) {
     await db
       .delete(ConsentRequest)
       .where(
-        eq(ConsentRequest.idHash, consentRequest.idHash),
+        eq(ConsentRequest.id, consentRequest.id),
       )
     return null
   }
@@ -54,7 +52,7 @@ export async function get(requestId: string) {
     await db
       .delete(ConsentRequest)
       .where(
-        eq(ConsentRequest.idHash, consentRequest.idHash),
+        eq(ConsentRequest.id, consentRequest.id),
       )
     return null
   }
@@ -66,13 +64,13 @@ export async function get(requestId: string) {
     await db
       .delete(ConsentRequest)
       .where(
-        eq(ConsentRequest.idHash, consentRequest.idHash),
+        eq(ConsentRequest.id, consentRequest.id),
       )
     return null
   }
 
   return {
-    idHash: consentRequest.idHash,
+    id: consentRequest.id,
     client,
     redirectUri: consentRequest.redirectUri,
     redirectUrl,
@@ -91,7 +89,7 @@ export async function pull(requestId: string) {
   await db
     .delete(ConsentRequest)
     .where(
-      eq(ConsentRequest.idHash, consentRequest.idHash),
+      eq(ConsentRequest.id, consentRequest.id),
     )
 
   return consentRequest

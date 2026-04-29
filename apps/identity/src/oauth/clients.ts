@@ -20,7 +20,7 @@ const clients: Client[] = [
       'http://localhost:4321/auth/callback',
       'http://localhost:4321/auth/moauth/callback',
     ],
-    grantTypes: ['authorization_code', 'client_credentials'],
+    grantTypes: ['authorization_code', 'client_credentials', 'refresh_token'],
     scope: 'offline_access read write delete',
     createdAt: new Date(2026, 3, 16),
   },

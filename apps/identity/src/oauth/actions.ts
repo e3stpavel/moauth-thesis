@@ -29,7 +29,7 @@ export const consent = defineAction({
         consentRequest.redirectUri,
         consentRequest.scope,
       )
-      redirectUrl.searchParams.set('code', code.id)
+      redirectUrl.searchParams.set('code', code.token)
     }
     else {
       redirectUrl.searchParams.set('error', 'access_denied')

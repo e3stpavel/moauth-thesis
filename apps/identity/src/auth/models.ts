@@ -5,10 +5,10 @@ export const tokenSchema = z.string()
   .transform(input => ([input.slice(0, 24), input.slice(24)]))
   .pipe(
     z.tuple([
-      z.string().cuid2().length(24),
+      z.string().length(24).cuid2(),
       z.string()
-        .regex(base32.regex)
-        .length(Math.ceil(32 * 8 / 5)),
+        .length(Math.ceil(32 * 8 / 5))
+        .regex(base32.regex),
     ]),
   )
 

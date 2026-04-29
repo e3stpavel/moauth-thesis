@@ -15,8 +15,8 @@ export const responseTypeSchema = z.string()
   )
 
 export const clientIdSchema = z.string()
-  .cuid2()
   .length(24)
+  .cuid2()
 
 export const redirectUrlSchema = z.string().url().superRefine((value, context) => {
   const url = new URL(value)
@@ -115,7 +115,13 @@ export const authorizationCodeGrantSchema = z.object({
 })
 
 export const refreshTokenGrantSchema = z.object({
-  'refresh_token': z.string(),
+  'refresh_token': z.string()
+    .transform(input => splitN(input, '.', 3))
+    .pipe(z.tuple([
+      z.string().length(24).cuid2(),
+      z.string().length(Math.ceil(40 / 3 * 4)).base64url(),
+      z.string().length(Math.ceil(32 / 3 * 4)).base64url(),
+    ])),
   'scope': scopeSchema.optional(),
 })
 

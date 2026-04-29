@@ -6,6 +6,7 @@ import * as clients from './clients'
 import * as consents from './consents'
 import { authorizeRequestSchema, clientIdSchema, stateSchema } from './models'
 import { validateRequestParameter, validateRequestParameters } from './parameters'
+import * as refreshTokens from './refresh-tokens'
 import * as scopes from './scopes'
 import { respondWithInvalidClient, validateClientAuth, validateGrantType } from './token'
 
@@ -207,6 +208,19 @@ export const token: APIRoute = async (context) => {
     return Response.json({ 'error': 'invalid_scope', 'error_description': scopeError }, { status: 400, headers })
   }
 
+  // because there's small amount of extensions and to simplify it now, I will keep it inline
+  //  maybe in future array of response write handlers can be called so they kinda form the final response
+  const generateRefreshToken = async () => {
+    if (!scope.has('offline_access')) {
+      return null
+    }
+    // in refresh_token grant, grant id is equals to current refresh_token id
+    const tokenId = grantHandler.grantType === 'refresh_token' ? grant.id : undefined
+    const refreshToken = await refreshTokens.create(client.id, grant.userId, grant.scope, tokenId)
+    const token = [refreshToken.id, refreshToken.secret, refreshToken.signature].join('.')
+    return token
+  }
+
   const expiresIn = 60 * 3
   const token = await jwt.encode({
     typ: 'at+JWT',
@@ -215,22 +229,18 @@ export const token: APIRoute = async (context) => {
     claims: {
       'sub': grant.userId,
       'aud': 'http://localhost:4321', // static for now, resource parameter implementation is needed
-      'client_id': grant.clientId,
+      'client_id': client.id,
       'scope': scope.encode(),
-    // auth_time, acr, amr out of scope now, but should be simply link session
+      // auth_time, acr, amr out of scope now, but should be simply link session
     },
   })
-
-  let refreshToken
-  if (scope.has('offline_access')) {
-    refreshToken = '_'
-  }
+  const refreshToken = await generateRefreshToken()
 
   return Response.json(
     {
       'access_token': token,
       'token_type': 'bearer', // value is case insensitive
-      'expires_in': 0,
+      'expires_in': expiresIn,
       'refresh_token': refreshToken ?? undefined,
       'scope': scope.encode(),
     },

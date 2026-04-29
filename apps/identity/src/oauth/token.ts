@@ -1,8 +1,16 @@
 import type { Client } from './clients'
 import * as authorizationCodes from './authorization-codes'
 import * as clients from './clients'
-import { authorizationCodeGrantSchema, clientCredentialsGrantSchema, clientSecretBasicSchema, clientSecretPostSchema, grantTypeSchema } from './models'
+import {
+  authorizationCodeGrantSchema,
+  clientCredentialsGrantSchema,
+  clientSecretBasicSchema,
+  clientSecretPostSchema,
+  grantTypeSchema,
+  refreshTokenGrantSchema,
+} from './models'
 import { validateRequestParameter, validateRequestParameters } from './parameters'
+import * as refreshTokens from './refresh-tokens'
 
 interface ClientAuthHandler { handle: () => Promise<Client | null> }
 
@@ -50,7 +58,7 @@ export function respondWithInvalidClient(message: string, headers: Headers): Res
 }
 
 interface Grant {
-  clientId: string
+  id: string
   userId: string
   scope: string
 }
@@ -84,6 +92,22 @@ export function validateGrantType(form: URLSearchParams): Result<GrantHandler | 
         undefined,
       ]
     }
+    case 'refresh_token': {
+      const [validParameters, parameters, parametersError] = validateRequestParameters(form, refreshTokenGrantSchema)
+      if (!validParameters) {
+        return [false, undefined, parametersError]
+      }
+      return [
+        true,
+        {
+          grantType: 'refresh_token',
+          // eslint-disable-next-line dot-notation
+          requestScope: parameters['scope'],
+          handle: client => refreshTokens.get(...parameters['refresh_token'], client.id),
+        },
+        undefined,
+      ]
+    }
     case 'client_credentials': {
       const [validParameters, parameters, parametersError] = validateRequestParameters(form, clientCredentialsGrantSchema)
       if (!validParameters) {
@@ -96,13 +120,16 @@ export function validateGrantType(form: URLSearchParams): Result<GrantHandler | 
           // eslint-disable-next-line dot-notation
           requestScope: parameters['scope'] ?? 'read',
           // client_credentials doesn't support offline_access, because you're supposed to get access_token only
-          // client_credentials resource_owner is authenticate client
-          handle: client => ({ clientId: client.id, userId: client.id, scope: 'read write delete' }),
+          // client_credentials resource_owner is authenticated client
+          handle: client => ({
+            id: client.id,
+            userId: client.id,
+            scope: 'read write delete',
+          }),
         },
         undefined,
       ]
     }
-    case 'refresh_token':
     default:
       return [true, null, undefined]
   }

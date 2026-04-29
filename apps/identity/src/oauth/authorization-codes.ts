@@ -4,35 +4,33 @@ import { AuthorizationCode, db, eq } from 'astro:db'
 import * as hasher from '~/utils/hasher'
 import { validateRedirectUri } from './authorize'
 
-// type Result<T> = [true, T] | [false, undefined]
-
 type Nullish<T> = T | null | undefined
 
 const MAX_AUTHORIZATION_CODE_DURATION_SECONDS = 60
 
 export async function create(userId: string, clientId: string, redirectUri: Nullish<string>, scope: string) {
   const bytes = crypto.getRandomValues(new Uint8Array(32))
-  const id = base32.encode(bytes)
-  const idHash = await hasher.hash(id)
+  const token = base32.encode(bytes)
+  const id = await hasher.hash(token)
   await db
     .insert(AuthorizationCode)
     .values({
-      idHash,
+      id,
       clientId,
       userId,
       redirectUri,
       scope,
     })
 
-  return { id }
+  return { token }
 }
 
-export async function use(codeId: string, client: Client, redirectUri: string | undefined) {
-  const idHash = await hasher.hash(codeId)
+export async function use(token: string, client: Client, redirectUri: string | undefined) {
+  const id = await hasher.hash(token)
   const [authorizationCode] = await db
     .delete(AuthorizationCode)
     .where(
-      eq(AuthorizationCode.idHash, idHash),
+      eq(AuthorizationCode.id, id),
     )
     .returning()
 
@@ -60,8 +58,7 @@ export async function use(codeId: string, client: Client, redirectUri: string | 
   }
 
   return {
-    idHash: authorizationCode.idHash,
-    clientId: authorizationCode.clientId,
+    id: authorizationCode.id,
     userId: authorizationCode.userId,
     scope: authorizationCode.scope,
   }

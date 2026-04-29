@@ -1,5 +1,6 @@
 import type { APIRoute } from 'astro'
 import { readBodyWithLimit } from '~/utils/body'
+import * as jwt from '~/utils/jwt'
 import { redirectWithError, validateRedirectUri } from './authorize'
 import * as clients from './clients'
 import * as consents from './consents'
@@ -206,12 +207,31 @@ export const token: APIRoute = async (context) => {
     return Response.json({ 'error': 'invalid_scope', 'error_description': scopeError }, { status: 400, headers })
   }
 
+  const expiresIn = 60 * 3
+  const token = await jwt.encode({
+    typ: 'at+JWT',
+    key: 'sig.oauth.access_token',
+    expiresIn,
+    claims: {
+      'sub': grant.userId,
+      'aud': 'http://localhost:4321', // static for now, resource parameter implementation is needed
+      'client_id': grant.clientId,
+      'scope': scope.encode(),
+    // auth_time, acr, amr out of scope now, but should be simply link session
+    },
+  })
+
+  let refreshToken
+  if (scope.has('offline_access')) {
+    refreshToken = '_'
+  }
+
   return Response.json(
     {
-      'access_token': '',
+      'access_token': token,
       'token_type': 'bearer', // value is case insensitive
       'expires_in': 0,
-      'refresh_token': '',
+      'refresh_token': refreshToken ?? undefined,
       'scope': scope.encode(),
     },
     { status: 200, headers },

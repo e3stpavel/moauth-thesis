@@ -57,6 +57,7 @@ interface Grant {
 
 interface GrantHandler {
   grantType: string
+  requestScope: string | undefined
   handle: (client: Client) => Promise<Grant | null> | Grant | null
 }
 
@@ -72,11 +73,12 @@ export function validateGrantType(form: URLSearchParams): Result<GrantHandler | 
       if (!validParameters) {
         return [false, undefined, parametersError]
       }
-
       return [
         true,
         {
           grantType: 'authorization_code',
+          // `scope` in this request is always empty because it was requested in /authorize
+          requestScope: undefined,
           handle: client => authorizationCodes.use(parameters.code, client, parameters['redirect_uri']),
         },
         undefined,
@@ -87,13 +89,15 @@ export function validateGrantType(form: URLSearchParams): Result<GrantHandler | 
       if (!validParameters) {
         return [false, undefined, parametersError]
       }
-
-      // TODO: scope
       return [
         true,
         {
           grantType: 'client_credentials',
-          handle: client => ({ clientId: client.id, userId: client.id, scope: '' }),
+          // eslint-disable-next-line dot-notation
+          requestScope: parameters['scope'] ?? 'read',
+          // client_credentials doesn't support offline_access, because you're supposed to get access_token only
+          // client_credentials resource_owner is authenticate client
+          handle: client => ({ clientId: client.id, userId: client.id, scope: 'read write delete' }),
         },
         undefined,
       ]

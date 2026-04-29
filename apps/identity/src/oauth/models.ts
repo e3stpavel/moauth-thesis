@@ -47,12 +47,8 @@ export const redirectUrlSchema = z.string().url().superRefine((value, context) =
   }
 })
 
+// we must send invalid_scope in case scope is unknown or invalid
 export const scopeSchema = z.string()
-  .transform(input => input.split(' ').filter(Boolean))
-  .pipe(z.string().array())
-  .transform(input =>
-    new Set(input).values().toArray(),
-  )
 
 export const stateSchema = z.string()
 

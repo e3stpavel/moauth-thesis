@@ -5,7 +5,7 @@ import * as clients from './clients'
 import * as consents from './consents'
 import { authorizeRequestSchema, clientIdSchema, stateSchema } from './models'
 import { validateRequestParameter, validateRequestParameters } from './parameters'
-import { validateScope } from './scopes'
+import * as scopes from './scopes'
 import { respondWithInvalidClient, validateClientAuth, validateGrantType } from './token'
 
 export const authorize: APIRoute = async (context) => {
@@ -99,14 +99,17 @@ export const authorize: APIRoute = async (context) => {
       return redirectWithError(context, redirectUrl, { 'error': 'unsupported_response_type' })
     }
 
+    // if `scope` parameter is omitted then `*` will be granted
+    //  to avoid that (least privilege access) we provide a safe default
+    //  however for clients with restricted scopes this might cause error, thus they must provide scope explicitly
     // eslint-disable-next-line dot-notation
-    const [validScope, scope] = validateScope('authorization_code', client, parameters['scope'])
+    const [validScope, scope, scopeError] = scopes.validate(client, parameters['scope'] ?? 'offline_access read')
     if (!validScope) {
-      return redirectWithError(context, redirectUrl, { 'error': 'invalid_scope' })
+      return redirectWithError(context, redirectUrl, { 'error': 'invalid_scope', 'error_description': scopeError })
     }
 
     // include here redirect_uri **as in request**
-    const consentRequest = await consents.create(client.id, clientAndRedirectUri['redirect_uri'], scope, state)
+    const consentRequest = await consents.create(client.id, clientAndRedirectUri['redirect_uri'], scope.encode(), state)
     return context.redirect(`/consent?state=${consentRequest.id}`, context.request.method === 'GET' ? 302 : 303)
   }
   catch (e) {
@@ -198,10 +201,19 @@ export const token: APIRoute = async (context) => {
     return Response.json({ 'error': 'invalid_grant' }, { status: 400, headers })
   }
 
-  console.log(grant)
+  const [validScope, scope, scopeError] = scopes.validate(client, grantHandler.requestScope, grant.scope)
+  if (!validScope) {
+    return Response.json({ 'error': 'invalid_scope', 'error_description': scopeError }, { status: 400, headers })
+  }
 
-  // TODO: invalid_scope for refresh_token, client_credentials?
-  // create access_token and refresh_token (if offline_access)
-
-  return Response.json({})
+  return Response.json(
+    {
+      'access_token': '',
+      'token_type': 'bearer', // value is case insensitive
+      'expires_in': 0,
+      'refresh_token': '',
+      'scope': scope.encode(),
+    },
+    { status: 200, headers },
+  )
 }

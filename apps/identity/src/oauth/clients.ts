@@ -6,6 +6,7 @@ export interface Client {
   secretHash: string | null
   redirectUris: string[]
   grantTypes: string[]
+  scope: string
   createdAt: Date
 }
 
@@ -20,6 +21,7 @@ const clients: Client[] = [
       'http://localhost:4321/auth/moauth/callback',
     ],
     grantTypes: ['authorization_code', 'client_credentials'],
+    scope: 'offline_access read write delete',
     createdAt: new Date(2026, 3, 16),
   },
   {
@@ -30,6 +32,7 @@ const clients: Client[] = [
       'http://localhost:4321/oauth/callback',
     ],
     grantTypes: ['authorization_code'],
+    scope: 'read',
     createdAt: new Date(2026, 3, 16),
   },
 ]

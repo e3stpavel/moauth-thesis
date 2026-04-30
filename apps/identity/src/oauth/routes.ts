@@ -1,11 +1,11 @@
 import type { APIRoute } from 'astro'
 import { readBodyWithLimit } from '~/utils/body'
 import * as jwt from '~/utils/jwt'
-import { redirectWithError, validateRedirectUri } from './authorize'
 import * as clients from './clients'
 import * as consents from './consents'
 import { authorizeRequestSchema, clientIdSchema, stateSchema } from './models'
 import { validateRequestParameter, validateRequestParameters } from './parameters'
+import * as redirectUris from './redirect-uris'
 import * as refreshTokens from './refresh-tokens'
 import * as scopes from './scopes'
 import { respondWithInvalidClient, validateClientAuth, validateGrantType } from './token'
@@ -70,14 +70,26 @@ export const authorize: APIRoute = async (context) => {
     return Response.json({ 'error': 'invalid_request', 'error_description': 'Invalid client_id' }, { status: 400, headers })
   }
 
-  const redirectUrl = validateRedirectUri(client, clientAndRedirectUri['redirect_uri'])
+  const redirectUrl = redirectUris.validate(client, clientAndRedirectUri['redirect_uri'])
   if (!redirectUrl) {
     return Response.json({ 'error': 'invalid_request', 'error_description': 'Invalid redirect_uri' }, { status: 400, headers })
   }
 
+  const redirectWithError = (error: Record<string, string>) => {
+    Object.entries(error)
+      .forEach(([key, value]) => {
+        redirectUrl.searchParams.set(key, value)
+      })
+
+    // because we use reference to `redirectUrl` variable, state also will be included
+    redirectUrl.searchParams.sort()
+    const status = context.request.method === 'GET' ? 302 : 303
+    return context.redirect(redirectUrl.href, status)
+  }
+
   const [validState, state, stateError] = validateRequestParameter('state', form, stateSchema)
   if (!validState) {
-    return redirectWithError(context, redirectUrl, { 'error': 'invalid_request', 'error_description': stateError })
+    return redirectWithError({ 'error': 'invalid_request', 'error_description': stateError })
   }
   redirectUrl.searchParams.set('state', state)
 
@@ -91,12 +103,12 @@ export const authorize: APIRoute = async (context) => {
       }),
     )
     if (!validParameters) {
-      return redirectWithError(context, redirectUrl, { 'error': 'invalid_request', 'error_description': parametersError })
+      return redirectWithError({ 'error': 'invalid_request', 'error_description': parametersError })
     }
 
     //  now only support 'code', reject implicit and hybrid flows
     if (!(parameters['response_type'].length === 1 && parameters['response_type'][0] === 'code')) {
-      return redirectWithError(context, redirectUrl, { 'error': 'unsupported_response_type' })
+      return redirectWithError({ 'error': 'unsupported_response_type' })
     }
 
     // if `scope` parameter is omitted then `*` will be granted
@@ -105,7 +117,7 @@ export const authorize: APIRoute = async (context) => {
     // eslint-disable-next-line dot-notation
     const [validScope, scope, scopeError] = scopes.validate(client, parameters['scope'] ?? 'offline_access read')
     if (!validScope) {
-      return redirectWithError(context, redirectUrl, { 'error': 'invalid_scope', 'error_description': scopeError })
+      return redirectWithError({ 'error': 'invalid_scope', 'error_description': scopeError })
     }
 
     const consentRequest = await consents.create({
@@ -121,7 +133,7 @@ export const authorize: APIRoute = async (context) => {
   }
   catch (e) {
     console.error(e)
-    return redirectWithError(context, redirectUrl, { 'error': 'server_error' })
+    return redirectWithError({ 'error': 'server_error' })
   }
 }
 

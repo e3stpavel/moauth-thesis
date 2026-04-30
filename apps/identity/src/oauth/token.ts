@@ -1,7 +1,6 @@
 import type { Client } from './clients'
 import { base64url } from '@moauth/encoding'
 import * as authorizationCodes from './authorization-codes'
-import { validateRedirectUri } from './authorize'
 import * as clients from './clients'
 import {
   authorizationCodeGrantSchema,
@@ -12,6 +11,7 @@ import {
   refreshTokenGrantSchema,
 } from './models'
 import { validateRequestParameter, validateRequestParameters } from './parameters'
+import * as redirectUris from './redirect-uris'
 import * as refreshTokens from './refresh-tokens'
 
 interface ClientAuthHandler { handle: () => Promise<Client | null> }
@@ -105,7 +105,7 @@ export function validateGrantType(form: URLSearchParams): Result<GrantHandler | 
               return null
             }
             // if redirect_uri provided now, check whether it is valid for client anyways
-            if (parameters['redirect_uri'] && !validateRedirectUri(client, parameters['redirect_uri'])) {
+            if (parameters['redirect_uri'] && !redirectUris.validate(client, parameters['redirect_uri'])) {
               return null
             }
 

@@ -2,7 +2,7 @@ import { base64url } from '@moauth/encoding'
 import { ConsentRequest, db, eq } from 'astro:db'
 import * as clients from '~/oauth/clients'
 import * as hasher from '~/utils/hasher'
-import { validateRedirectUri } from './authorize'
+import * as redirectUris from './redirect-uris'
 
 const MAX_CONSENT_REQUEST_DURATION_SECONDS = 60 * 15
 
@@ -56,7 +56,7 @@ export async function get(token: string) {
     return null
   }
 
-  const redirectUrl = validateRedirectUri(client, consentRequest.redirectUri)
+  const redirectUrl = redirectUris.validate(client, consentRequest.redirectUri)
   if (!redirectUrl) {
     // this can happen when client changed his registered redirect_uri in the middle of the request
     //  therefore we invalidate the request immediately as this can signal that client is under attack

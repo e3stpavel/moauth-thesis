@@ -13,9 +13,12 @@ import * as refreshTokens from './refresh-tokens'
 
 type Result<T> = [true, T, undefined] | [false, undefined, string]
 
-interface Grant {
+// maybe we can make this a discriminated union, if we need to get extra props
+export interface Grant {
+  type: string
   id: string
   userId: string
+  clientId: string
   scope: string
 }
 
@@ -40,7 +43,7 @@ export function validate(form: URLSearchParams): Result<GrantHandler | null> {
       return [
         true,
         {
-          grantType: 'authorization_code',
+          grantType,
           // `scope` in this request is always empty because it was requested in /authorize
           requestScope: undefined,
           handle: async (client) => {
@@ -73,7 +76,7 @@ export function validate(form: URLSearchParams): Result<GrantHandler | null> {
               return null
             }
 
-            return code
+            return { type: grantType, ...code }
           },
         },
         undefined,
@@ -87,10 +90,21 @@ export function validate(form: URLSearchParams): Result<GrantHandler | null> {
       return [
         true,
         {
-          grantType: 'refresh_token',
+          grantType,
           // eslint-disable-next-line dot-notation
           requestScope: parameters['scope'],
-          handle: client => refreshTokens.get(...parameters['refresh_token'], client.id),
+          handle: async (client) => {
+            const refreshToken = await refreshTokens.get(...parameters['refresh_token'])
+            if (!refreshToken) {
+              return null
+            }
+
+            if (refreshToken.clientId !== client.id) {
+              return null
+            }
+
+            return { type: grantType, ...refreshToken }
+          },
         },
         undefined,
       ]
@@ -103,21 +117,24 @@ export function validate(form: URLSearchParams): Result<GrantHandler | null> {
       return [
         true,
         {
-          grantType: 'client_credentials',
+          grantType,
           // eslint-disable-next-line dot-notation
           requestScope: parameters['scope'] ?? 'read',
           // client_credentials doesn't support offline_access, because you're supposed to get access_token only
-          // client_credentials resource_owner is authenticated client
+          // client_credentials resource owner is authenticated client
           handle: client => ({
+            type: grantType,
             id: client.id,
             userId: client.id,
+            clientId: client.id,
             scope: 'read write delete',
           }),
         },
         undefined,
       ]
     }
-    default:
+    default: {
       return [true, null, undefined]
+    }
   }
 }

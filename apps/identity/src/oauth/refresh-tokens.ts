@@ -7,33 +7,19 @@ import { HMAC_KEY } from '~/utils/keys'
 // refresh token is long-lasting credential that only expires when client doesn't use it
 const ACTIVE_REFRESH_TOKEN_DURATION_SECONDS = 60 * 60 * 24 * 5
 
-/** Creates refresh_token, if `tokenId` provided then it'll try to rotate existing refresh_token */
-export async function create(clientId: string, userId: string, scope: string, tokenId = randomCUID()) {
+type SaveRefreshToken = (secretHash: string) => Promise<string>
+
+async function generate(save: SaveRefreshToken) {
   const bytes = crypto.getRandomValues(new Uint8Array(40))
   const secret = base64url.encode(bytes)
   const secretHash = await hasher.hash(secret)
-  await db
-    .insert(RefreshToken)
-    .values({
-      id: tokenId,
-      secretHash,
-      clientId,
-      userId,
-      scope,
-    })
-    .onConflictDoUpdate({
-      target: RefreshToken.id,
-      set: {
-        secretHash,
-        lastVerifiedAt: new Date(),
-      },
-    })
+  const tokenId = await save(secretHash)
 
   const encoder = new TextEncoder()
   const buffer = await crypto.subtle.sign(
     { name: 'HMAC' },
     HMAC_KEY,
-    encoder.encode([tokenId, 'moauth', secret].join('.')),
+    encoder.encode([tokenId, secret].join('.')),
   )
   const signature = base64url.encode(new Uint8Array(buffer))
 
@@ -44,13 +30,44 @@ export async function create(clientId: string, userId: string, scope: string, to
   }
 }
 
-export async function get(tokenId: string, secret: string, signature: string, clientId: string) {
+type NewRefreshToken = Pick<typeof RefreshToken.$inferInsert, 'clientId' | 'userId' | 'scope'>
+
+export async function create(refreshToken: NewRefreshToken) {
+  return generate(async (secretHash) => {
+    const tokenId = randomCUID()
+    await db
+      .insert(RefreshToken)
+      .values({
+        id: tokenId,
+        secretHash,
+        ...refreshToken,
+      })
+    return tokenId
+  })
+}
+
+export async function rotate(tokenId: string) {
+  return generate(async (secretHash) => {
+    await db
+      .update(RefreshToken)
+      .set({
+        secretHash,
+        lastVerifiedAt: new Date(),
+      })
+      .where(
+        eq(RefreshToken.id, tokenId),
+      )
+    return tokenId
+  })
+}
+
+export async function get(tokenId: string, secret: string, signature: string) {
   const encoder = new TextEncoder()
   const validSignature = await crypto.subtle.verify(
     { name: 'HMAC' },
     HMAC_KEY,
     base64url.decode(signature),
-    encoder.encode([tokenId, 'moauth', secret].join('.')),
+    encoder.encode([tokenId, secret].join('.')),
   )
   if (!validSignature) {
     return null
@@ -82,13 +99,5 @@ export async function get(tokenId: string, secret: string, signature: string, cl
     return null
   }
 
-  if (refreshToken.clientId !== clientId) {
-    return null
-  }
-
-  return {
-    id: refreshToken.id,
-    userId: refreshToken.userId,
-    scope: refreshToken.scope,
-  }
+  return refreshToken
 }

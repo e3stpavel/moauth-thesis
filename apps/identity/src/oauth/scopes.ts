@@ -14,6 +14,8 @@ class ScopeSet extends Set<string> {
   }
 }
 
+export type { ScopeSet }
+
 function parse(scope: string): ScopeSet | null {
   const scopes = scope.split(' ').filter(Boolean)
   if (!scopes.every(scope => ['offline_access', 'read', 'write', 'delete'].includes(scope))) {

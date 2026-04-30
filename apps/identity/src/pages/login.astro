@@ -6,11 +6,11 @@ import Button from '~/components/ui/Button.astro'
 import TextInput from '~/components/ui/TextInput.astro'
 import AuthLayout from '~/layouts/AuthLayout.astro'
 import { redirectUriSchema } from '~/auth/models'
-import { validateRequestParameter } from '~/oauth/parameters'
+import * as parametersValidator from '~/utils/parameters-validator'
 import { formUrlEncoded } from '@moauth/encoding'
 
 const query = Astro.url.searchParams
-let [_, redirectUri] = validateRequestParameter('redirect_uri', query, redirectUriSchema)
+let [_, redirectUri] = parametersValidator.validateOne('redirect_uri', query, redirectUriSchema)
 if (!redirectUri) {
   redirectUri = '/'
 }

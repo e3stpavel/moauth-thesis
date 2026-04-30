@@ -1,5 +1,6 @@
 import type { Client } from './clients'
 import { base64url } from '@moauth/encoding'
+import * as parametersValidator from '~/utils/parameters-validator'
 import * as authorizationCodes from './authorization-codes'
 import * as clients from './clients'
 import {
@@ -10,7 +11,6 @@ import {
   grantTypeSchema,
   refreshTokenGrantSchema,
 } from './models'
-import { validateRequestParameter, validateRequestParameters } from './parameters'
 import * as redirectUris from './redirect-uris'
 import * as refreshTokens from './refresh-tokens'
 
@@ -34,7 +34,7 @@ export function validateClientAuth(form: URLSearchParams, headers: Headers): Res
 
   // client_secret_post
   if (form.has('client_secret')) {
-    const [valid, parameters, error] = validateRequestParameters(form, clientSecretPostSchema)
+    const [valid, parameters, error] = parametersValidator.validate(form, clientSecretPostSchema)
     if (!valid) {
       return [false, undefined, error]
     }
@@ -72,14 +72,14 @@ interface GrantHandler {
 }
 
 export function validateGrantType(form: URLSearchParams): Result<GrantHandler | null> {
-  const [validGrantType, grantType, grantTypeError] = validateRequestParameter('grant_type', form, grantTypeSchema)
+  const [validGrantType, grantType, grantTypeError] = parametersValidator.validateOne('grant_type', form, grantTypeSchema)
   if (!validGrantType) {
     return [false, undefined, grantTypeError]
   }
 
   switch (grantType) {
     case 'authorization_code': {
-      const [validParameters, parameters, parametersError] = validateRequestParameters(form, authorizationCodeGrantSchema)
+      const [validParameters, parameters, parametersError] = parametersValidator.validate(form, authorizationCodeGrantSchema)
       if (!validParameters) {
         return [false, undefined, parametersError]
       }
@@ -126,7 +126,7 @@ export function validateGrantType(form: URLSearchParams): Result<GrantHandler | 
       ]
     }
     case 'refresh_token': {
-      const [validParameters, parameters, parametersError] = validateRequestParameters(form, refreshTokenGrantSchema)
+      const [validParameters, parameters, parametersError] = parametersValidator.validate(form, refreshTokenGrantSchema)
       if (!validParameters) {
         return [false, undefined, parametersError]
       }
@@ -142,7 +142,7 @@ export function validateGrantType(form: URLSearchParams): Result<GrantHandler | 
       ]
     }
     case 'client_credentials': {
-      const [validParameters, parameters, parametersError] = validateRequestParameters(form, clientCredentialsGrantSchema)
+      const [validParameters, parameters, parametersError] = parametersValidator.validate(form, clientCredentialsGrantSchema)
       if (!validParameters) {
         return [false, undefined, parametersError]
       }

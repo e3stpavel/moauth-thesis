@@ -7,7 +7,7 @@ import Button from '~/components/ui/Button.astro'
 import Icon from '~/components/ui/Icon.astro'
 import AuthLayout from '~/layouts/AuthLayout.astro'
 import * as consents from '~/oauth/consents'
-import { validateRequestParameter } from '~/oauth/parameters'
+import * as parametersValidator from '~/utils/parameters-validator'
 import { consentRequestIdSchema } from '~/oauth/models'
 
 const headers = new Headers()
@@ -24,7 +24,7 @@ if (result && !result.error) {
 // if result of action is error, we will fallthrough and eventually `consentRequest` validation will fail
 
 const query = Astro.url.searchParams
-const [validRequestId, requestId] = validateRequestParameter('state', query, consentRequestIdSchema)
+const [validRequestId, requestId] = parametersValidator.validateOne('state', query, consentRequestIdSchema)
 if (!validRequestId) {
   return new Response(null, { status: 400, headers })
 }

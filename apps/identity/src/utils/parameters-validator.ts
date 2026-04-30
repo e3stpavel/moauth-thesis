@@ -3,7 +3,7 @@ import type { z } from 'astro/zod'
 /** Represents validation status as first element, second element is data, third is error message */
 type ValidationResult<TSchema extends z.ZodTypeAny> = [true, z.infer<TSchema>, undefined] | [false, undefined, string]
 
-export function validateRequestParameters<TSchema extends z.AnyZodObject>(
+export function validate<TSchema extends z.AnyZodObject>(
   form: URLSearchParams,
   schema: TSchema,
 ): ValidationResult<TSchema> {
@@ -11,7 +11,7 @@ export function validateRequestParameters<TSchema extends z.AnyZodObject>(
   const acc: { [key: string]: unknown } = {}
   for (const name of names) {
     const parameterSchema = schema.shape[name]
-    const [valid, data, error] = validateRequestParameter(name, form, parameterSchema)
+    const [valid, data, error] = validateOne(name, form, parameterSchema)
     if (!valid) {
       return [false, undefined, error]
     }
@@ -22,7 +22,7 @@ export function validateRequestParameters<TSchema extends z.AnyZodObject>(
   return [true, acc, undefined]
 }
 
-export function validateRequestParameter<TSchema extends z.ZodTypeAny>(
+export function validateOne<TSchema extends z.ZodTypeAny>(
   name: string,
   form: URLSearchParams,
   schema: TSchema,
@@ -44,4 +44,24 @@ export function validateRequestParameter<TSchema extends z.ZodTypeAny>(
   }
 
   return [true, validation.data, undefined]
+}
+
+export function validateMany<TSchema extends z.ZodTypeAny>(
+  name: string,
+  form: URLSearchParams,
+  schema: TSchema,
+): ValidationResult<TSchema> {
+  // Parameters sent without a value MUST be treated as if they were omitted from the request
+  const values = form.getAll(name).filter(value => !!value.trim())
+  const acc = []
+  for (const value of values) {
+    const validation = schema.safeParse(value)
+    if (!validation.success) {
+      // showing real validation error might disclose technical details, so for now we show vague message
+      return [false, undefined, `Invalid ${name}`]
+    }
+    acc.push(validation.data)
+  }
+
+  return [true, acc, undefined]
 }

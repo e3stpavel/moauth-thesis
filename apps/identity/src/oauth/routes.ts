@@ -1,10 +1,10 @@
 import type { APIRoute } from 'astro'
 import { readBodyWithLimit } from '~/utils/body'
 import * as jwt from '~/utils/jwt'
+import * as parametersValidator from '~/utils/parameters-validator'
 import * as clients from './clients'
 import * as consents from './consents'
 import { authorizeRequestSchema, clientIdSchema, stateSchema } from './models'
-import { validateRequestParameter, validateRequestParameters } from './parameters'
 import * as redirectUris from './redirect-uris'
 import * as refreshTokens from './refresh-tokens'
 import * as scopes from './scopes'
@@ -54,7 +54,7 @@ export const authorize: APIRoute = async (context) => {
     }
   }
 
-  const [validClientAndRedirectUri, clientAndRedirectUri, clientAndRedirectUriError] = validateRequestParameters(
+  const [validClientAndRedirectUri, clientAndRedirectUri, clientAndRedirectUriError] = parametersValidator.validate(
     form,
     authorizeRequestSchema.pick({
       'client_id': true,
@@ -87,14 +87,14 @@ export const authorize: APIRoute = async (context) => {
     return context.redirect(redirectUrl.href, status)
   }
 
-  const [validState, state, stateError] = validateRequestParameter('state', form, stateSchema)
+  const [validState, state, stateError] = parametersValidator.validateOne('state', form, stateSchema)
   if (!validState) {
     return redirectWithError({ 'error': 'invalid_request', 'error_description': stateError })
   }
   redirectUrl.searchParams.set('state', state)
 
   try {
-    const [validParameters, parameters, parametersError] = validateRequestParameters(
+    const [validParameters, parameters, parametersError] = parametersValidator.validate(
       form,
       authorizeRequestSchema.omit({
         'client_id': true,
@@ -179,7 +179,7 @@ export const token: APIRoute = async (context) => {
   }
 
   // A client MAY use the "client_id" request parameter to identify itself when sending requests to the token endpoint
-  const [validClientId, clientId, clientIdError] = validateRequestParameter('client_id', form, clientIdSchema.optional())
+  const [validClientId, clientId, clientIdError] = parametersValidator.validateOne('client_id', form, clientIdSchema.optional())
   if (!validClientId) {
     return Response.json({ 'error': 'invalid_request', 'error_description': clientIdError }, { status: 400, headers })
   }

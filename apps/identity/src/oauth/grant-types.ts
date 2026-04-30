@@ -2,62 +2,16 @@ import type { Client } from './clients'
 import { base64url } from '@moauth/encoding'
 import * as parametersValidator from '~/utils/parameters-validator'
 import * as authorizationCodes from './authorization-codes'
-import * as clients from './clients'
 import {
   authorizationCodeGrantSchema,
   clientCredentialsGrantSchema,
-  clientSecretBasicSchema,
-  clientSecretPostSchema,
   grantTypeSchema,
   refreshTokenGrantSchema,
 } from './models'
 import * as redirectUris from './redirect-uris'
 import * as refreshTokens from './refresh-tokens'
 
-interface ClientAuthHandler { handle: () => Promise<Client | null> }
-
 type Result<T> = [true, T, undefined] | [false, undefined, string]
-
-export function validateClientAuth(form: URLSearchParams, headers: Headers): Result<ClientAuthHandler[]> {
-  const handlers = []
-
-  // client_secret_basic, overall we support only `Basic` scheme only
-  if (headers.has('authorization')) {
-    const validation = clientSecretBasicSchema.safeParse(headers.get('authorization'))
-    if (!validation.success) {
-      return [false, undefined, 'Invalid authorization']
-    }
-    handlers.push(
-      { handle: () => clients.authenticate(...validation.data) },
-    )
-  }
-
-  // client_secret_post
-  if (form.has('client_secret')) {
-    const [valid, parameters, error] = parametersValidator.validate(form, clientSecretPostSchema)
-    if (!valid) {
-      return [false, undefined, error]
-    }
-    handlers.push(
-      { handle: () => clients.authenticate(parameters['client_id'], parameters['client_secret']) },
-    )
-  }
-
-  // add another methods later, like private_key_jwt
-
-  return [true, handlers, undefined]
-}
-
-export function respondWithInvalidClient(message: string, headers: Headers): Response {
-  headers.set('www-authenticate', 'Basic realm="oauth"')
-  return Response.json(
-    {
-      'error': 'invalid_client',
-      'error_description': message,
-    },
-    { status: 401, headers },
-  )
-}
 
 interface Grant {
   id: string
@@ -71,7 +25,7 @@ interface GrantHandler {
   handle: (client: Client) => Promise<Grant | null> | Grant | null
 }
 
-export function validateGrantType(form: URLSearchParams): Result<GrantHandler | null> {
+export function validate(form: URLSearchParams): Result<GrantHandler | null> {
   const [validGrantType, grantType, grantTypeError] = parametersValidator.validateOne('grant_type', form, grantTypeSchema)
   if (!validGrantType) {
     return [false, undefined, grantTypeError]

@@ -2,13 +2,14 @@ import type { APIRoute } from 'astro'
 import { readBodyWithLimit } from '~/utils/body'
 import * as jwt from '~/utils/jwt'
 import * as parametersValidator from '~/utils/parameters-validator'
+import * as clientAuth from './client-auth'
 import * as clients from './clients'
 import * as consents from './consents'
+import * as grantTypes from './grant-types'
 import { authorizeRequestSchema, clientIdSchema, stateSchema } from './models'
 import * as redirectUris from './redirect-uris'
 import * as refreshTokens from './refresh-tokens'
 import * as scopes from './scopes'
-import { respondWithInvalidClient, validateClientAuth, validateGrantType } from './token'
 
 export const authorize: APIRoute = async (context) => {
   const headers = new Headers()
@@ -163,7 +164,7 @@ export const token: APIRoute = async (context) => {
   const encoded = new TextDecoder().decode(body)
   const form = new URLSearchParams(encoded)
 
-  const [validClientAuth, clientAuthHandlers, clientAuthError] = validateClientAuth(form, context.request.headers)
+  const [validClientAuth, clientAuthHandlers, clientAuthError] = clientAuth.validate(form, context.request.headers)
   if (!validClientAuth) {
     return Response.json({ 'error': 'invalid_request', 'error_description': clientAuthError }, { status: 400, headers })
   }
@@ -184,6 +185,17 @@ export const token: APIRoute = async (context) => {
     return Response.json({ 'error': 'invalid_request', 'error_description': clientIdError }, { status: 400, headers })
   }
 
+  const respondWithInvalidClient = (message: string) => {
+    headers.set('www-authenticate', 'Basic realm="oauth"')
+    return Response.json(
+      {
+        'error': 'invalid_client',
+        'error_description': message,
+      },
+      { status: 401, headers },
+    )
+  }
+
   let client
   const clientAuthHandler = clientAuthHandlers[0]
   if (clientAuthHandler) {
@@ -194,17 +206,17 @@ export const token: APIRoute = async (context) => {
     client = await clients.identity(clientId)
   }
   else {
-    return respondWithInvalidClient('No client authentication included', headers)
+    return respondWithInvalidClient('No client authentication included')
   }
 
   if (!client) {
-    return respondWithInvalidClient('Client authentication failed', headers)
+    return respondWithInvalidClient('Client authentication failed')
   }
   if (clientId && client.id !== clientId) {
-    return respondWithInvalidClient('client_id does not match authenticated client', headers)
+    return respondWithInvalidClient('client_id does not match authenticated client')
   }
 
-  const [validGrantType, grantHandler, grantTypeError] = validateGrantType(form)
+  const [validGrantType, grantHandler, grantTypeError] = grantTypes.validate(form)
   if (!validGrantType) {
     return Response.json({ 'error': 'invalid_request', 'error_description': grantTypeError }, { status: 400, headers })
   }

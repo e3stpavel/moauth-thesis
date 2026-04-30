@@ -6,18 +6,17 @@ import { validateRedirectUri } from './authorize'
 
 const MAX_CONSENT_REQUEST_DURATION_SECONDS = 60 * 15
 
-export async function create(clientId: string, redirectUri: string | undefined, scope: string, state: string) {
+type NewConsentRequest = Omit<typeof ConsentRequest.$inferInsert, 'id' | 'createdAt'>
+
+export async function create(consentRequest: NewConsentRequest) {
   const bytes = crypto.getRandomValues(new Uint8Array(32))
   const token = base64url.encode(bytes)
   const requestId = await hasher.hash(token)
   await db
     .insert(ConsentRequest)
     .values({
+      ...consentRequest,
       id: requestId,
-      clientId,
-      redirectUri,
-      scope,
-      state,
     })
 
   return { token }
@@ -70,18 +69,15 @@ export async function get(token: string) {
   }
 
   return {
-    id: consentRequest.id,
+    ...consentRequest,
     client,
-    redirectUri: consentRequest.redirectUri,
     redirectUrl,
-    scope: consentRequest.scope,
-    state: consentRequest.state,
   }
 }
 
-export async function pull(requestId: string) {
+export async function pull(token: string) {
   // `get` effectively removes consent request if it's invalid, so we safe to call it
-  const consentRequest = await get(requestId)
+  const consentRequest = await get(token)
   if (!consentRequest) {
     return null
   }

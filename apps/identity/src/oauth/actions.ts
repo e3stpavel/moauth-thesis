@@ -23,12 +23,10 @@ export const consent = defineAction({
     if (consentResponse.approved) {
       // TODO: save user consent to avoid asking them later
 
-      const code = await authorizationCodes.create(
-        session.user.id,
-        consentRequest.client.id,
-        consentRequest.redirectUri,
-        consentRequest.scope,
-      )
+      const code = await authorizationCodes.create({
+        userId: session.user.id,
+        ...consentRequest,
+      })
       redirectUrl.searchParams.set('code', code.token)
     }
     else {

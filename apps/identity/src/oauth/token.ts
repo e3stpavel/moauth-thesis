@@ -1,5 +1,7 @@
 import type { Client } from './clients'
+import { base64url } from '@moauth/encoding'
 import * as authorizationCodes from './authorization-codes'
+import { validateRedirectUri } from './authorize'
 import * as clients from './clients'
 import {
   authorizationCodeGrantSchema,
@@ -87,7 +89,38 @@ export function validateGrantType(form: URLSearchParams): Result<GrantHandler | 
           grantType: 'authorization_code',
           // `scope` in this request is always empty because it was requested in /authorize
           requestScope: undefined,
-          handle: client => authorizationCodes.use(parameters.code, client, parameters['redirect_uri']),
+          handle: async (client) => {
+            // eslint-disable-next-line dot-notation
+            const code = await authorizationCodes.use(parameters['code'])
+            if (!code) {
+              return null
+            }
+
+            if (code.clientId !== client.id) {
+              return null
+            }
+
+            // if redirect_uri was present in authorization request, redirect_uri provided now must match
+            if (code.redirectUri && code.redirectUri !== parameters['redirect_uri']) {
+              return null
+            }
+            // if redirect_uri provided now, check whether it is valid for client anyways
+            if (parameters['redirect_uri'] && !validateRedirectUri(client, parameters['redirect_uri'])) {
+              return null
+            }
+
+            let codeChallenge = parameters['code_verifier']
+            if (code.codeChallengeMethod === 'S256') {
+              const encoder = new TextEncoder()
+              const buffer = await crypto.subtle.digest('SHA-256', encoder.encode(parameters['code_verifier']))
+              codeChallenge = base64url.encode(new Uint8Array(buffer))
+            }
+            if (code.codeChallenge !== codeChallenge) {
+              return null
+            }
+
+            return code
+          },
         },
         undefined,
       ]

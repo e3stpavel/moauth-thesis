@@ -94,9 +94,7 @@ export const authorize: APIRoute = async (context) => {
       return redirectWithError(context, redirectUrl, { 'error': 'invalid_request', 'error_description': parametersError })
     }
 
-    // TODO: pick strategy
-    //  scopes are resolved also depending on strategy, i.e. forbid offline_access for client_credentials flow
-    //  but now only support 'code', reject implicit and hybrid flows
+    //  now only support 'code', reject implicit and hybrid flows
     if (!(parameters['response_type'].length === 1 && parameters['response_type'][0] === 'code')) {
       return redirectWithError(context, redirectUrl, { 'error': 'unsupported_response_type' })
     }
@@ -110,8 +108,15 @@ export const authorize: APIRoute = async (context) => {
       return redirectWithError(context, redirectUrl, { 'error': 'invalid_scope', 'error_description': scopeError })
     }
 
-    // include here redirect_uri **as in request**
-    const consentRequest = await consents.create(client.id, clientAndRedirectUri['redirect_uri'], scope.encode(), state)
+    const consentRequest = await consents.create({
+      clientId: client.id,
+      // include here redirect_uri **as in request**
+      redirectUri: clientAndRedirectUri['redirect_uri'],
+      scope: scope.encode(),
+      state,
+      codeChallenge: parameters['code_challenge'],
+      codeChallengeMethod: parameters['code_challenge_method'],
+    })
     return context.redirect(`/consent?state=${consentRequest.token}`, context.request.method === 'GET' ? 302 : 303)
   }
   catch (e) {

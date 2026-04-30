@@ -52,12 +52,26 @@ export const scopeSchema = z.string()
 
 export const stateSchema = z.string()
 
+export const codeVerifierSchema = z.string()
+  .min(43)
+  .max(128)
+  .regex(/^[\w\-.~]+$/)
+
+export const codeChallengeMethod = z.enum(['plain', 'S256'])
+
+export const codeChallenge = z.string()
+  .min(43)
+  .max(128)
+  .regex(/^[\w\-.~]+$/)
+
 export const authorizeRequestSchema = z.object({
   'response_type': responseTypeSchema,
   'client_id': clientIdSchema,
   'redirect_uri': redirectUrlSchema.optional(),
   'scope': scopeSchema.optional(),
   'state': stateSchema, // we require state
+  'code_challenge': codeChallenge,
+  'code_challenge_method': codeChallengeMethod.default('plain'),
 })
 
 export const consentRequestIdSchema = z.string()
@@ -112,6 +126,7 @@ export const authorizationCodeGrantSchema = z.object({
     .length(Math.ceil(32 * 8 / 5))
     .regex(base32.regex),
   'redirect_uri': redirectUrlSchema.optional(),
+  'code_verifier': codeVerifierSchema,
 })
 
 export const refreshTokenGrantSchema = z.object({

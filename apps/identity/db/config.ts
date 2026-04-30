@@ -27,6 +27,8 @@ const ConsentRequest = defineTable({
     redirectUri: column.text({ optional: true }),
     scope: column.text(),
     state: column.text(),
+    codeChallenge: column.text(),
+    codeChallengeMethod: column.text({ enum: ['plain', 'S256'] }),
     createdAt: column.date({ default: NOW }),
   },
 })
@@ -38,6 +40,8 @@ const AuthorizationCode = defineTable({
     userId: column.text({ references: () => User.columns.id }),
     redirectUri: column.text({ optional: true }),
     scope: column.text(),
+    codeChallenge: column.text(),
+    codeChallengeMethod: column.text({ enum: ['plain', 'S256'] }),
     createdAt: column.date({ default: NOW }),
   },
 })

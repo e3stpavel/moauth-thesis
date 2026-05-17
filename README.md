@@ -15,6 +15,14 @@ This project is not a production-ready authorization server, rather a prototype 
 1. Open `http://localhost:3210`
 1. Ready!
 
+## OAuth 2.0 Standards
+Now **moauth** implements/follows:
+- [The OAuth2 Authentication Framework (RFC6749)](https://datatracker.ietf.org/doc/html/rfc6749)
+- [The OAuth2 Bearer Token (RFC6750)](https://datatracker.ietf.org/doc/html/rfc6750)
+- [Proof Key for Code Exchange by OAuth Public Clients (RFC7636)](https://datatracker.ietf.org/doc/html/rfc7636)
+- [JSON Web Token (JWT) Profile for OAuth 2.0 Access Tokens (RFC9068)](https://datatracker.ietf.org/doc/html/rfc9068)
+- [Best Current Practice for OAuth 2.0 Security (RFC9700)](https://datatracker.ietf.org/doc/html/rfc9700)
+
 ## Configuration
 ### Database
 You need to push database schema and optionally seed database before you start!
@@ -35,7 +43,6 @@ This will add a single user:
 Email:      pamayo@taltech.ee
 Password:   Pass1234!
 ```
-
 
 ### Clients
 You can register client in `apps/identity/src/oauth/clients.ts`:
@@ -63,10 +70,8 @@ cuid
 # prints: nnqq8p0utwlb37769z9xt0gc
 ```
 
-## OAuth 2.0 Standards
-Now **moauth** implements/follows:
-- [The OAuth2 Authentication Framework (RFC6749)](https://datatracker.ietf.org/doc/html/rfc6749)
-- [The OAuth2 Bearer Token (RFC6750)](https://datatracker.ietf.org/doc/html/rfc6750)
-- [Proof Key for Code Exchange by OAuth Public Clients (RFC7636)](https://datatracker.ietf.org/doc/html/rfc7636)
-- [JSON Web Token (JWT) Profile for OAuth 2.0 Access Tokens (RFC9068)](https://datatracker.ietf.org/doc/html/rfc9068)
-- [Best Current Practice for OAuth 2.0 Security (RFC9700)](https://datatracker.ietf.org/doc/html/rfc9700)
+## Security
+Project is archived and doesn't accept new issues/pull requests. However, security vulnerabilities can be reported to author directly at mayorov.eestpavel@gmail.com. All security vulnerabilities will be promptly addressed and made public.
+
+## License
+GNU Affero General Public License v3.0

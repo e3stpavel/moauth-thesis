@@ -4,6 +4,9 @@
   "tasks": {
     "check": {
       "outputs": [".astro/**"]
+    },
+    "build": {
+      "env": ["ASTRO_DB_REMOTE_URL"]
     }
   }
 }

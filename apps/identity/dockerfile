@@ -1,0 +1,52 @@
+ARG NODE_VERSION=24.15
+FROM node:${NODE_VERSION}-alpine AS base
+
+# Install pnpm and enable corepack
+ENV PNPM_HOME="/pnpm"
+ENV PATH="$PNPM_HOME:$PATH"
+RUN corepack enable
+
+WORKDIR /app
+
+# Prune unnecessary dependencies
+#  https://turbo.build/repo/docs/guides/tools/docker
+FROM base AS prune
+
+ARG TURBO_VERSION=2.9.6
+RUN pnpm install --global turbo@${TURBO_VERSION}
+
+COPY . .
+
+RUN turbo prune @moauth/identity --docker
+
+FROM base AS dependencies
+
+COPY --from=prune /app/out/json .
+
+RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm install --frozen-lockfile --prod
+
+FROM base AS build
+
+COPY --from=prune /app/out/json .
+
+RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm install --frozen-lockfile
+
+COPY --from=prune /app/out/full .
+
+ARG ASTRO_DB_REMOTE_URL
+RUN ASTRO_DB_REMOTE_URL=${ASTRO_DB_REMOTE_URL} pnpm turbo build --filter @moauth/identity
+
+FROM base AS runtime
+
+RUN addgroup --system --gid 1001 moauth
+RUN adduser --system --uid 1001 astro
+USER astro
+
+COPY --from=dependencies --chown=astro:moauth /app/node_modules ./node_modules
+COPY --from=dependencies --chown=astro:moauth /app/apps/identity/node_modules ./apps/identity/node_modules
+COPY --from=build --chown=astro:moauth /app/apps/identity/dist ./apps/identity/dist
+
+ENV HOST=0.0.0.0
+ENV PORT=3210
+EXPOSE 3210
+CMD [ "node", "./apps/identity/dist/server/entry.mjs" ]

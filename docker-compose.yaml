@@ -1,0 +1,30 @@
+services:
+  db:
+    image: ghcr.io/tursodatabase/libsql-server:e4beaca
+    platform: linux/amd64
+    ports:
+      - 8080:8080
+    volumes:
+      - moauthdb:/var/lib/sqld
+    networks:
+      - moauthdb
+
+  moauth:
+    restart: unless-stopped
+    build:
+      dockerfile: ./apps/identity/dockerfile
+      context: .
+      args:
+        ASTRO_DB_REMOTE_URL: http://db:8080
+    ports:
+      - 3210:3210
+    networks:
+      - moauthdb
+    depends_on:
+      - db
+  
+networks:
+  moauthdb:
+
+volumes:
+  moauthdb:

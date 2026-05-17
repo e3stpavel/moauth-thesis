@@ -28,6 +28,7 @@ export const redirectUrlSchema = z.string().url().superRefine((value, context) =
     })
   }
 
+  // TODO: https://www.rfc-editor.org/rfc/rfc8252#section-7.3
   if (url.protocol === 'http:') {
     if (url.hostname !== 'localhost') {
       context.addIssue({
